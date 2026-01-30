@@ -19,8 +19,8 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'laa-spring-boot-microservice-template'
+rootProject.name = 'laa-claim-for-payment-stubs'
 
-include 'spring-boot-microservice-api'
-include 'spring-boot-microservice-service'
+include 'stub-civil-claims-api'
+// include 'spring-boot-microservice-service'
 

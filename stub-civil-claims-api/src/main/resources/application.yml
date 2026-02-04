@@ -26,6 +26,7 @@ spring:
       local-postgres: "local"
       local-h2: "local,h2"           # Local by default uses H2
       uat: "uat,postgres"         # UAT = Postgres + UAT tweaks
+      test: "test,h2"              # Test profile uses H2
     default: local-h2
 
 # used by actuator info endpoint

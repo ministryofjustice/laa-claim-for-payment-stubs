@@ -167,8 +167,6 @@ class ClaimControllerTest {
   void createClaim_returnsBadRequestStatus() throws Exception {
     UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
-    UUID submissionId = UUID.randomUUID();
-
     mockMvc
         .perform(
             post("/api/v1/claims")
@@ -182,12 +180,11 @@ class ClaimControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(
             content()
-                .string(
+                .json(
                     String.format(
-                        "{\"type\":\"about:blank\",\"title\":\"Bad"
+                        "{\"title\":\"Bad"
                             + " Request\",\"status\":400,\"detail\":\"Invalid request"
-                            + " content.\",\"instance\":\"/api/v1/claims\"}",
-                        submissionId)));
+                            + " content.\",\"instance\":\"/api/v1/claims\"}")));
 
     verify(mockClaimService, never()).createClaim(any(ClaimRequestBody.class), any(UUID.class));
   }
@@ -241,8 +238,8 @@ class ClaimControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(
             content()
-                .string(
-                    "{\"type\":\"about:blank\",\"title\":\"Bad"
+                .json(
+                    "{\"title\":\"Bad"
                         + " Request\",\"status\":400,\"detail\":\"Invalid request"
                         + " content.\",\"instance\":"
                         + "\"/api/v1/claims/2\"}"));

@@ -1,10 +1,8 @@
 package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.mapper;
 
 import org.mapstruct.Mapper;
-
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
-
 
 /** The mapper between Claim and ClaimEntity. */
 @Mapper(componentModel = "spring")

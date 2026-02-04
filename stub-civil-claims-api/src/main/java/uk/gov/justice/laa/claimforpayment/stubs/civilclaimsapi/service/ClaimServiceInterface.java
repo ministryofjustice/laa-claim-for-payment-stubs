@@ -2,10 +2,8 @@ package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
-
 
 /** An interface to some method of managing claims. */
 public interface ClaimServiceInterface {

@@ -28,12 +28,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.security.SecurityConfig;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service.DatabaseBasedClaimService;
-
 
 @WebMvcTest(controllers = ClaimController.class)
 @Import({SecurityConfig.class}) // Import security and OAuth2 config for tests

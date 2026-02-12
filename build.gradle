@@ -1,3 +1,10 @@
 subprojects {
     group = 'uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.stubs'
+    plugins.withType(JavaPlugin) {
+    java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+      }
+    }
+  }
 }

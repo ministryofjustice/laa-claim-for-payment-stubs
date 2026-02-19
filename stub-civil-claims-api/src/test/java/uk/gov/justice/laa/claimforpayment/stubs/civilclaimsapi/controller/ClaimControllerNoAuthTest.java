@@ -19,12 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.security.NoAuthSecurityConfig;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service.DatabaseBasedClaimService;
-
-
 
 @WebMvcTest(controllers = ClaimController.class)
 @ActiveProfiles("test")

@@ -15,13 +15,13 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v5.0.0
         with:
           java-version: 21
           distribution: 'corretto'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v5.0.0
 
       - name: Build and test
         run: ./gradlew build
@@ -34,11 +34,13 @@ jobs:
       - name: Integration test
         run: ./gradlew integrationTest --tests '*IntegrationTest'
 
-      - name: Upload test results
+      - name: Upload test results (all modules)
+        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: test-results
-          path: spring-boot-microservice-service/build/test-results
+          path: |
+            **/build/test-results/**
           retention-days: 14
 
       - name: Upload checkstyle report
@@ -46,7 +48,8 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: checkstyle-report
-          path: spring-boot-microservice-service/build/reports/checkstyle
+          path: |
+            **/build/reports/checkstyle/**
           retention-days: 14
 
       - name: Upload test report
@@ -54,7 +57,8 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: test-report
-          path: spring-boot-microservice-service/build/reports/tests
+          path: |
+            **/build/reports/tests/**
           retention-days: 14
 
       - name: Upload jacoco coverage report
@@ -62,7 +66,8 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: jacoco-coverage-report
-          path: spring-boot-microservice-service/build/reports/jacoco
+          path: |
+            **/build/reports/jacoco/**
           retention-days: 14
 
   vulnerability-report:
@@ -105,3 +110,69 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: snyk-app.sarif
+
+
+  ecr:
+    needs: build-test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: stub-civil-claims-api
+            context: ./stub-civil-claims-api
+            dockerfile: ./stub-civil-claims-api/Dockerfile
+            ecr-repository: ${{ vars.STUB_CIVIL_CLAIMS_API_ECR_REPOSITORY}}
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Build and test
+        run: ./gradlew :${{ matrix.name }}:build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS creds (BFF)
+        if: matrix.name == 'stub-civil-claims-api'
+        uses: aws-actions/configure-aws-credentials@v5.0.0
+        with:
+          role-to-assume: ${{ secrets.STUB_CIVIL_CLAIMS_API_ECR_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.STUB_CIVIL_CLAIMS_API_ECR_REGION}}
+      - name: login to registry
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+        id: login-ecr
+
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.name }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and push image with local action
+        uses: ./.github/actions/build_and_push
+        with:
+          image_registry: ${{ secrets.ECR_REGISTRY_URL }}
+          image_repo: ${{ matrix.ecr-repository }}
+          dockerfile_path: ${{ matrix.dockerfile }}
+          build_context: ${{ matrix.context }} 
+          image_tag: ${{ env.IMAGE_TAG }}

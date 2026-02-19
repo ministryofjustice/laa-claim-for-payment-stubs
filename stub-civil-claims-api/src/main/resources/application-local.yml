@@ -1,11 +1,14 @@
 security:
-  enabled: true 
+  enabled: false 
 logging.level:
   root: INFO
   org.springframework.security.oauth2.jwt: DEBUG
   org.springframework.security.oauth2.server.resource: DEBUG
   org.springframework.security.web.access.ExceptionTranslationFilter: DEBUG
 spring:
+  h2:
+    console:
+      enabled: true
   security:
     oauth2:
       resourceserver:

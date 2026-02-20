@@ -129,7 +129,7 @@ jobs:
     env:
       IMAGE_TAG: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
@@ -146,7 +146,7 @@ jobs:
 
       - name: Configure AWS creds (BFF)
         if: matrix.name == 'stub-civil-claims-api'
-        uses: aws-actions/configure-aws-credentials@v5.0.0
+        uses: aws-actions/configure-aws-credentials@v6.0.0
         with:
           role-to-assume: ${{ secrets.STUB_CIVIL_CLAIMS_API_ECR_ROLE_TO_ASSUME }}
           aws-region: ${{ vars.STUB_CIVIL_CLAIMS_API_ECR_REGION}}
@@ -156,12 +156,12 @@ jobs:
 
         
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
         with:
           install: true
 
       - name: Cache Docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.name }}

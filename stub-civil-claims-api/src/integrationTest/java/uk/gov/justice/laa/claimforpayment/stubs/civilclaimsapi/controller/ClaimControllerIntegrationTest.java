@@ -39,7 +39,7 @@ class ClaimControllerIntegrationTest {
                         .authorities(() -> "SCOPE_Claims.Write")))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$", hasSize(11)));
+        .andExpect(jsonPath("$.claims", hasSize(11)));
   }
 
   @Test

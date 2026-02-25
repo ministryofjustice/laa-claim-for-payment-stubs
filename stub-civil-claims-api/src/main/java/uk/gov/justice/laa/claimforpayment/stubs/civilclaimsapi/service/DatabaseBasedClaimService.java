@@ -3,6 +3,9 @@ package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
@@ -100,9 +103,9 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
   }
 
   @Override
-  public List<Claim> getAllClaimsForProvider(UUID providerUserId) {
-    return claimRepository.findByProviderUserId(providerUserId).stream()
-        .map(claimMapper::toClaim)
-        .toList();
+  public Page<Claim> getAllClaimsForProvider(UUID providerUserId, int pageNumber, int pageSize) {
+    Pageable pageable = PageRequest.of(pageNumber, pageSize);
+    Page<ClaimEntity> claimPage = claimRepository.findByProviderUserId(providerUserId, pageable);
+    return claimPage.map(claimMapper::toClaim);
   }
 }

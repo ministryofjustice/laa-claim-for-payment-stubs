@@ -2,6 +2,7 @@ package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
 
@@ -50,7 +51,9 @@ public interface ClaimServiceInterface {
    * Gets all claims for a given provider user ID.
    *
    * @param providerUserId the ID of the provider user
+   * @param pageNumber the page number to retrieve
+   * @param pageSize the number of claims per page
    * @return a list of submissions for the provider user
    */
-  List<Claim> getAllClaimsForProvider(UUID providerUserId);
+  Page<Claim> getAllClaimsForProvider(UUID providerUserId, int pageNumber, int pageSize);
 }

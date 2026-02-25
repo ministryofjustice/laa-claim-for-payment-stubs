@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,10 +12,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,18 +28,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimPageResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service.ClaimServiceInterface;
-
 
 /** REST controller for managing claims. */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/claims")
+@RequestMapping(path = "/api/v1/claims", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Tag(name = "Claims", description = "Operations related to provider claims")
 public class ClaimController {
@@ -78,17 +81,21 @@ public class ClaimController {
    *
    * @return a list of all claims for the user
    */
-  @Operation(summary = "Get all claims for the authenticated user")
+  @Operation(summary = "Get paged claims for the authenticated user")
   @ApiResponses(
       value = {
         @ApiResponse(
             responseCode = "200",
-            description = "List of claims linked to a provider user",
-            content = @Content(schema = @Schema(implementation = Claim.class)))
+            description = "Paged list of claims linked to a provider user",
+            content =
+                @Content(schema = @Schema(implementation = ClaimPageResponse.class)))
       })
   @PreAuthorize("hasAuthority('SCOPE_Claims.Write')")
   @GetMapping
-  public ResponseEntity<List<Claim>> getClaims(@AuthenticationPrincipal Jwt jwt) {
+  public ResponseEntity<ClaimPageResponse> getClaims(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int limit,
+      @AuthenticationPrincipal Jwt jwt) {
 
     String id = jwt.getClaimAsString("USER_NAME");
     if (id == null || id.isBlank()) {
@@ -97,9 +104,11 @@ public class ClaimController {
     UUID providerUserId = UUID.fromString(id);
     log.debug("Fetching all claims for provider user " + providerUserId);
 
-    List<Claim> claims = claimService.getAllClaimsForProvider(providerUserId);
+    Page<Claim> claims = claimService.getAllClaimsForProvider(providerUserId, page, limit);
 
-    return ResponseEntity.ok(claims);
+    return ResponseEntity.ok(
+        new ClaimPageResponse(
+            claims.toList(), page, limit, claims.getTotalElements(), claims.getTotalPages()));
   }
 
   /**

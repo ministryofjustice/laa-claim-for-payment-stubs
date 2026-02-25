@@ -25,6 +25,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -88,21 +91,26 @@ class ClaimControllerTest {
                 .providerUserId(providerUserId2)
                 .build());
 
-    List<Claim> claim1 = List.of(claims.getFirst());
+    Page<Claim> claim1 = new PageImpl<>(List.of(claims.getFirst()), Pageable.ofSize(1), 1);
+    int pageNumber = 1;
+    int pageSize = 1;
 
-    when(mockClaimService.getAllClaimsForProvider(providerUserId1)).thenReturn(claim1);
+    when(mockClaimService.getAllClaimsForProvider(providerUserId1, pageNumber, pageSize))
+        .thenReturn(claim1);
 
     mockMvc
         .perform(
             get("/api/v1/claims")
+                .param("page", String.valueOf(pageNumber))
+                .param("limit", String.valueOf(pageSize))
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
                         .authorities(() -> "SCOPE_Claims.Write")))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.[0].id").value("1"))
-        .andExpect(jsonPath("$.*", hasSize(1)));
+        .andExpect(jsonPath("$.claims[0].id").value("1"))
+        .andExpect(jsonPath("$.claims", hasSize(1)));
   }
 
   @Test

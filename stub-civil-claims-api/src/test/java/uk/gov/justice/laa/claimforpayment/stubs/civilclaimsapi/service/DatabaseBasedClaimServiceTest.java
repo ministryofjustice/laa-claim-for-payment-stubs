@@ -17,7 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.mapper.ClaimMapper;
@@ -142,12 +145,15 @@ class DatabaseBasedClaimServiceTest {
             .providerUserId(providerUserId)
             .build();
 
-    when(mockClaimRepository.findByProviderUserId(providerUserId))
-        .thenReturn(List.of(firstClaimEntity, secondClaimEntity));
+    Pageable pageable = PageRequest.of(1, 1);
+    Page<ClaimEntity> page =
+        new PageImpl<ClaimEntity>(List.of(firstClaimEntity, secondClaimEntity));
+
+    when(mockClaimRepository.findByProviderUserId(providerUserId, pageable)).thenReturn(page);
     when(mockClaimMapper.toClaim(firstClaimEntity)).thenReturn(firstClaim);
     when(mockClaimMapper.toClaim(secondClaimEntity)).thenReturn(secondClaim);
 
-    List<Claim> result = claimService.getAllClaimsForProvider(providerUserId);
+    Page<Claim> result = claimService.getAllClaimsForProvider(providerUserId,1,1);
 
     assertThat(result).hasSize(2).contains(firstClaim, secondClaim);
   }

@@ -1,7 +1,8 @@
 package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.repository;
 
-import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
@@ -10,5 +11,5 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntit
 @Repository
 public interface ClaimRepository extends JpaRepository<ClaimEntity, Long> {
 
-  List<ClaimEntity> findByProviderUserId(UUID providerUserId);
+  Page<ClaimEntity> findByProviderUserId(UUID providerUserId, Pageable pageable);
 }

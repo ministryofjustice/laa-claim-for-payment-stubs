@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "stubs-civil-claims-api.name" -}}
+{{- define "stub-civil-claims-api.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "stubs-civil-claims-api.fullname" -}}
+{{- define "stub-civil-claims-api.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "stubs-civil-claims-api.chart" -}}
+{{- define "stub-civil-claims-api.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "stubs-civil-claims-api.labels" -}}
-helm.sh/chart: {{ include "stubs-civil-claims-api.chart" . }}
-{{ include "stubs-civil-claims-api.selectorLabels" . }}
+{{- define "stub-civil-claims-api.labels" -}}
+helm.sh/chart: {{ include "stub-civil-claims-api.chart" . }}
+{{ include "stub-civil-claims-api.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,8 +45,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "stubs-civil-claims-api.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "stubs-civil-claims-api.name" . }}
+{{- define "stub-civil-claims-api.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "stub-civil-claims-api.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 

@@ -24,6 +24,7 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubAp
 class ClaimControllerIntegrationNoAuthTest {
 
   @Autowired private MockMvc mockMvc;
+  
 
   @Test
   void shouldGetAllClaimsForUser() throws Exception {

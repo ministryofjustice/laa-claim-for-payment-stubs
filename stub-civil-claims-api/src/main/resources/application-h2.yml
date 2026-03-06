@@ -6,7 +6,7 @@ spring:
     password:
   jpa:
     properties:
-      hibernate.ddl-auto: validate
+      hibernate.ddl-auto: none
   h2:
     console:
       enabled: true

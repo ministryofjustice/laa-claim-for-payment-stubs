@@ -4,7 +4,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,6 +35,7 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNo
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimPageResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.CreateClaimResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service.ClaimServiceInterface;
 
 /** REST controller for managing claims. */
@@ -56,11 +57,22 @@ public class ClaimController {
   @Operation(summary = "Create a new claim")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "201", description = "Claim created successfully"),
+        @ApiResponse(
+            responseCode = "201",
+            description = "Claim created successfully",
+            headers =
+                @Header(
+                    name = "Location",
+                    description = "URI of the created claim resource",
+                    schema = @Schema(type = "string", example = "/api/v1/claims/123")),
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = CreateClaimResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
       })
   @PostMapping
-  public ResponseEntity<Void> createClaim(
+  public ResponseEntity<CreateClaimResponse> createClaim(
       @Parameter(description = "Claim input data", required = true) @Valid @RequestBody
           ClaimRequestBody requestBody,
       @AuthenticationPrincipal Jwt jwt) {
@@ -73,7 +85,9 @@ public class ClaimController {
 
     Long claimId = claimService.createClaim(requestBody, providerUserId);
     URI location = URI.create("/api/v1/claims/" + claimId);
-    return ResponseEntity.created(location).build();
+    return ResponseEntity
+    .created(location)
+    .body(new CreateClaimResponse(claimId));
   }
 
   /**
@@ -87,8 +101,7 @@ public class ClaimController {
         @ApiResponse(
             responseCode = "200",
             description = "Paged list of claims linked to a provider user",
-            content =
-                @Content(schema = @Schema(implementation = ClaimPageResponse.class)))
+            content = @Content(schema = @Schema(implementation = ClaimPageResponse.class)))
       })
   @PreAuthorize("hasAuthority('SCOPE_Claims.Write')")
   @GetMapping

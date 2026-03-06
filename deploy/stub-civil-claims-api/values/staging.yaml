@@ -50,7 +50,7 @@ service:
 ingress:
   enabled: true
   hosts:
-    - host: laa-claim-for-payment-stubs-staging.cloud-platform.service.justice.gov.uk
+    - host: laa-claim-for-payment-stubs-civil-claims-api-staging.cloud-platform.service.justice.gov.uk
       paths:
         - path: /
           pathType: Prefix

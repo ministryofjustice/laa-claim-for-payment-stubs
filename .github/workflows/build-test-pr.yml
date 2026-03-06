@@ -111,7 +111,7 @@ jobs:
 
       - name: Build Docker image for ${{ matrix.module }}
         run: |
-          docker build \
+          docker build --pull \
             -t ${{ matrix.module }}:scan \
             -f ${{ matrix.module }}/Dockerfile \
             ${{ matrix.module }}

@@ -1,3 +1,4 @@
+-- Enable UUID generation in Postgres (ignored by H2)
 DROP TABLE IF EXISTS claims;
 DROP TABLE IF EXISTS submissions;
 
@@ -12,3 +13,6 @@ CREATE TABLE IF NOT EXISTS claims (
     submission_id       UUID,
     provider_user_id    UUID
 );
+
+
+

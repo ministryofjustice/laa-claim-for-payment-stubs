@@ -1,6 +1,8 @@
 security:
   enabled: false   # feature-flag flip to true when the client is ready
 spring:
+  main:
+    allow-circular-references: true
   application:
     name: C&A Civil Claims Stub API 
   datasource:
@@ -11,7 +13,7 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:password}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:

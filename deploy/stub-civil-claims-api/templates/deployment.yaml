@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "stubs-civil-claims-api.fullname" . }}
+  name: {{ include "stub-civil-claims-api.fullname" . }}
   labels:
-    {{- include "stubs-civil-claims-api.labels" . | nindent 4 }}
+    {{- include "stub-civil-claims-api.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "stubs-civil-claims-api.selectorLabels" . | nindent 6 }}
+      {{- include "stub-civil-claims-api.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "stubs-civil-claims-api.labels" . | nindent 8 }}
+        {{- include "stub-civil-claims-api.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

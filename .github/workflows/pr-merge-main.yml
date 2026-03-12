@@ -213,6 +213,30 @@ jobs:
               ratewindow_ms: ${{ vars.RATE_WINDOW_MS }}  
               service_artifact: 'stub-civil-claims-api'   
 
+  run-e2e:
+    needs: stub-civil-claims-deploy-uat
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App Token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: YOUR_ORG_OR_USER
+
+      - name: Trigger and Wait for E2E Tests
+        uses: the-actions-org/workflow-dispatch@v4
+        with:
+          workflow: qa-ci.yml
+          # Combine owner and repo name here:
+          repo: ministryofjustice/claim-assess-regression-tests
+          token: ${{ steps.generate_token.outputs.token }}
+          ref: main
+          inputs: '{"environment": "uat"}'
+          wait-for-completion: true
+          display-workflow-run-url: true      
+
   deploy-staging:
         environment: staging
         runs-on: ubuntu-latest

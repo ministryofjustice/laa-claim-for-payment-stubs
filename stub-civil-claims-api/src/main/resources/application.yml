@@ -1,3 +1,5 @@
+server:
+  port: 8090
 security:
   enabled: false   # feature-flag flip to true when the client is ready
 spring:

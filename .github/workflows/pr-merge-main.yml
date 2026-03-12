@@ -233,7 +233,7 @@ jobs:
           repo: ministryofjustice/claim-assess-regression-tests
           token: ${{ steps.generate_token.outputs.token }}
           ref: main
-          inputs: '{"environment": "uat"}'
+          # inputs: '{"environment": "uat"}'
           wait-for-completion: true
           display-workflow-run-url: true      
 

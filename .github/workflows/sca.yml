@@ -27,6 +27,6 @@ jobs:
       GITHUB_ACTOR: ${{ github.actor }}
 
     steps:
-      - uses: ministryofjustice/devsecops-actions/sca@v1.3.0
+      - uses: ministryofjustice/devsecops-actions/sca@v1.4.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

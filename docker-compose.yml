@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: stub-civil-claims-api
     ports:
-      - "8090:8080"
+      - "8090:8090"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8080

@@ -36,7 +36,7 @@ jobs:
 
       - name: Upload test results (all modules)
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: |
@@ -45,7 +45,7 @@ jobs:
 
       - name: Upload checkstyle report
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: checkstyle-report
           path: |
@@ -54,7 +54,7 @@ jobs:
 
       - name: Upload test report
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-report
           path: |
@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload jacoco coverage report
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: jacoco-coverage-report
           path: |
@@ -129,7 +129,7 @@ jobs:
     env:
       IMAGE_TAG: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
@@ -146,22 +146,22 @@ jobs:
 
       - name: Configure AWS creds (BFF)
         if: matrix.name == 'stub-civil-claims-api'
-        uses: aws-actions/configure-aws-credentials@v5.0.0
+        uses: aws-actions/configure-aws-credentials@v6.0.0
         with:
           role-to-assume: ${{ secrets.STUB_CIVIL_CLAIMS_API_ECR_ROLE_TO_ASSUME }}
           aws-region: ${{ vars.STUB_CIVIL_CLAIMS_API_ECR_REGION}}
       - name: login to registry
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+        uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2.0.2
         id: login-ecr
 
         
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
         with:
           install: true
 
       - name: Cache Docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.name }}
@@ -218,7 +218,7 @@ jobs:
     steps:
       - name: Generate GitHub App Token
         id: generate_token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}

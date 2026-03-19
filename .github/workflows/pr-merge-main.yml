@@ -177,14 +177,71 @@ jobs:
           build_context: ${{ matrix.context }} 
           image_tag: ${{ env.IMAGE_TAG }}
 
+  stub-civil-claims-deploy-dev:
+        environment: dev
+        runs-on: ubuntu-latest
+        needs:
+          - ecr
+          - vulnerability-report
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v6
+
+          - name: Deploy to Development
+            uses: ./.github/actions/deploy
+            with:
+              ecr-repository:  ${{ vars.STUB_CIVIL_CLAIMS_API_ECR_REPOSITORY}}
+              ecr-registry_url: ${{ secrets.ECR_REGISTRY_URL }}
+              kube-cert: ${{ secrets.KUBE_CERT }}
+              kube-token: ${{ secrets.KUBE_TOKEN }}
+              kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+              kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+              app-environment: uat
+              session_secret: ${{ secrets.SESSION_SECRET }}
+              service_name: ${{ vars.SERVICE_NAME }}
+              service_phase: ${{ vars.SERVICE_PHASE }}
+              department_name: ${{ vars.DEPARTMENT_NAME }}
+              department_url: ${{ vars.DEPARTMENT_URL }}
+              contact_email: ${{ vars.CONTACT_EMAIL }}
+              service_url: ${{ vars.SERVICE_URL }}
+              session_name: ${{ vars.SESSION_NAME}}
+              ratelimit_headers_enabled: ${{ vars.RATELIMIT_HEADERS_ENABLED }}
+              ratelimit_storage_uri: ${{ vars.RATELIMIT_STORAGE_URI }}
+              ratelimit_max: ${{ vars.RATE_LIMIT_MAX }}
+              ratewindow_ms: ${{ vars.RATE_WINDOW_MS }}  
+              service_artifact: 'stub-civil-claims-api'           
+
+  
+  run-e2e:
+    needs: ecr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App Token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ministryofjustice
+
+      - name: Trigger and Wait for E2E Tests
+        uses: the-actions-org/workflow-dispatch@v4
+        with:
+          workflow: qa-ci.yml
+          # Combine owner and repo name here:
+          repo: ministryofjustice/claim-assess-regression-tests
+          token: ${{ steps.generate_token.outputs.token }}
+          ref: main
+          # inputs: '{"environment": "uat"}'
+          wait-for-completion: true
+          display-workflow-run-url: true   
+
   stub-civil-claims-deploy-uat:
         environment: uat
         runs-on: ubuntu-latest
         needs:
-          - build-test
-          - ecr
+          - run-e2e
           - vulnerability-report
-
         steps:
           - name: Checkout
             uses: actions/checkout@v6
@@ -213,35 +270,14 @@ jobs:
               ratewindow_ms: ${{ vars.RATE_WINDOW_MS }}  
               service_artifact: 'stub-civil-claims-api'   
 
-  run-e2e:
-    needs: stub-civil-claims-deploy-uat
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate GitHub App Token
-        id: generate_token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ministryofjustice
-
-      - name: Trigger and Wait for E2E Tests
-        uses: the-actions-org/workflow-dispatch@v4
-        with:
-          workflow: qa-ci.yml
-          # Combine owner and repo name here:
-          repo: ministryofjustice/claim-assess-regression-tests
-          token: ${{ steps.generate_token.outputs.token }}
-          ref: main
-          # inputs: '{"environment": "uat"}'
-          wait-for-completion: true
-          display-workflow-run-url: true      
+     
 
   deploy-staging:
         environment: staging
         runs-on: ubuntu-latest
         needs:
           - run-e2e
+          - vulnerability-report
         steps:
           - name: Checkout
             uses: actions/checkout@v6

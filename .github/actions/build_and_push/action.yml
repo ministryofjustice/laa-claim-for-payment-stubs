@@ -45,7 +45,7 @@ runs:
 
         CTX="${{ inputs.build_context }}"
 
-        docker build \
+        docker buildx build \
           --push \
           --cache-from=type=local,src=/tmp/.buildx-cache \
           --cache-to=type=local,dest=/tmp/.buildx-cache \

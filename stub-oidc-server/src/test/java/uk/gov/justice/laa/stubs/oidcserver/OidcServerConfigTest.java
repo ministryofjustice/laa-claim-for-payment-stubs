@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,55 +30,57 @@ public class OidcServerConfigTest {
     @BeforeEach
     void setUp() {
         OidcServerConfig config = new OidcServerConfig();
-        this.customizer = config.tokenCustomizer(config.testProfiles());
+        List<TestUser> users = List.of(USER_1, USER_2);
+        Map<String, TestUser> profiles = users.stream().collect(Collectors.toMap(TestUser::username, user -> user));
+        this.customizer = config.tokenCustomizer(profiles);
     }
 
     @ParameterizedTest
     @MethodSource("users")
-    void idTokenCustomizerAddsClaims(ArgumentsClass args) {
-        JwtEncodingContext context = buildContext(args, new OAuth2TokenType(OidcParameterNames.ID_TOKEN));
+    void idTokenCustomizerAddsClaims(TestUser user, String role) {
+        JwtEncodingContext context = buildContext(user.username(), role, new OAuth2TokenType(OidcParameterNames.ID_TOKEN));
 
         customizer.customize(context);
 
         Map<String, Object> claims = context.getClaims().build().getClaims();
 
-        assertThat(claims.get("sub")).isEqualTo(args.username);
-        assertThat(claims.get("FIRM_CODE")).isEqualTo(args.firmId);
-        assertThat((claims.get("USER_NAME").toString())).isEqualTo(args.providerUserId);
-        assertThat((List<String>) claims.get("roles")).containsExactly(args.role);
-        assertThat(claims.get("email")).isEqualTo(args.email);
-        assertThat(claims.get("name")).isEqualTo(args.displayName);
-        assertThat(claims.get("preferred_username")).isEqualTo(args.username);
+        assertThat(claims.get("sub")).isEqualTo(user.username());
+        assertThat(claims.get("FIRM_CODE")).isEqualTo(user.firmId());
+        assertThat((claims.get("USER_NAME"))).isEqualTo(user.providerUserId());
+        assertThat((List<String>) claims.get("roles")).containsExactly(role);
+        assertThat(claims.get("email")).isEqualTo(user.email());
+        assertThat(claims.get("name")).isEqualTo(user.displayName());
+        assertThat(claims.get("preferred_username")).isEqualTo(user.username());
         assertThat(claims).doesNotContainKeys("aud");
     }
 
     @ParameterizedTest
     @MethodSource("users")
-    void accessTokenCustomizerAddsClaims(ArgumentsClass args) {
-        JwtEncodingContext context = buildContext(args, OAuth2TokenType.ACCESS_TOKEN);
+    void accessTokenCustomizerAddsClaims(TestUser user, String role) {
+        JwtEncodingContext context = buildContext(user.username(), role, OAuth2TokenType.ACCESS_TOKEN);
 
         customizer.customize(context);
 
         Map<String, Object> claims = context.getClaims().build().getClaims();
 
-        assertThat(claims.get("sub")).isEqualTo(args.username);
-        assertThat(claims.get("FIRM_CODE")).isEqualTo(args.firmId);
-        assertThat((claims.get("USER_NAME").toString())).isEqualTo(args.providerUserId);
-        assertThat((List<String>) claims.get("roles")).containsExactly(args.role);
+        assertThat(claims.get("sub")).isEqualTo(user.username());
+        assertThat(claims.get("FIRM_CODE")).isEqualTo(user.firmId());
+        assertThat((claims.get("USER_NAME"))).isEqualTo(user.providerUserId());
+        assertThat((List<String>) claims.get("roles")).containsExactly(role);
         assertThat(claims).doesNotContainKeys("email", "name", "preferred_username");
         assertThat(claims.get("aud")).isEqualTo(List.of("api-audience"));
     }
 
-    private JwtEncodingContext buildContext(ArgumentsClass args, OAuth2TokenType tokenType) {
+    private JwtEncodingContext buildContext(String username, String role, OAuth2TokenType tokenType) {
         Authentication principal = new UsernamePasswordAuthenticationToken(
-            args.username,
+            username,
             "password",
-            List.of(new SimpleGrantedAuthority("ROLE_" + args.role))
+            List.of(new SimpleGrantedAuthority("ROLE_" + role))
         );
 
         JwsHeader.Builder jwsHeaderBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
 
-        JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder().subject(args.username);
+        JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder().subject(username);
 
         return JwtEncodingContext.with(jwsHeaderBuilder, claimsBuilder)
             .principal(principal)
@@ -87,27 +91,27 @@ public class OidcServerConfigTest {
     private static Stream<Arguments> users() {
         return Stream.of(
             Arguments.of(
-                new ArgumentsClass(
-                    "alice",
-                    "Alice Smith",
-                    "alice.smith@example.test",
-                    "prov-123",
-                    "d9c4b277-941c-451c-81c4-6b46b7f7ab59",
-                    "caseworker"
-                )
+                USER_1,
+                "role1"
             ),
             Arguments.of(
-                new ArgumentsClass(
-                    "bob",
-                    "Bob Jones",
-                    "bob.jones@example.test",
-                    "prov-456",
-                    "123e4567-e89b-12d3-a456-426614174000",
-                    "admin"
-                )
+                USER_2,
+                "role2"
             )
         );
     }
 
-    private record ArgumentsClass(String username, String displayName, String email, String firmId, String providerUserId, String role) {}
+    private static final TestUser USER_1 = new TestUser(
+        "alice",
+        "Alice Smith",
+        "alice.smith@example.test",
+        "prov-123",
+        UUID.fromString("d9c4b277-941c-451c-81c4-6b46b7f7ab59"));
+
+    private static final TestUser USER_2 = new TestUser(
+        "bob",
+        "Bob Jones",
+        "bob.jones@example.test",
+        "prov-456",
+        UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 }

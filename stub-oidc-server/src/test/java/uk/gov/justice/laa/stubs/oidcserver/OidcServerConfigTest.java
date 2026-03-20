@@ -7,15 +7,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 
@@ -73,34 +69,19 @@ public class OidcServerConfigTest {
     }
 
     private JwtEncodingContext buildContext(TestUser user, String role, OAuth2TokenType tokenType) {
-        RegisteredClient client = RegisteredClient.withId("test")
-            .clientId("caa-client")
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .scope(OidcScopes.OPENID)
-            .redirectUri("https://example.com")
-            .build();
-
         Authentication principal = new UsernamePasswordAuthenticationToken(
             user.username(),
             "password",
             List.of(new SimpleGrantedAuthority("ROLE_" + role))
         );
 
-        OAuth2Authorization authorization = OAuth2Authorization.withRegisteredClient(client)
-            .principalName(user.username())
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .build();
-
         JwsHeader.Builder jwsHeaderBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
-        JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
-            .subject(user.username());
+
+        JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder().subject(user.username());
 
         return JwtEncodingContext.with(jwsHeaderBuilder, claimsBuilder)
-            .registeredClient(client)
             .principal(principal)
-            .authorization(authorization)
             .tokenType(tokenType)
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .build();
     }
 

@@ -4,13 +4,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,8 +23,6 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -45,6 +36,15 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Configuration for the mock OIDC server, including security chains, registered clients, JWK
@@ -207,10 +207,6 @@ public class OidcServerConfig {
         User.withUsername("bob").password(encoder.encode("password")).roles("admin").build());
   }
 
-  /** Represents a test user profile with username, display name, email, and provider ID. */
-  public record TestUser(
-      String username, String displayName, String email, String firmId, UUID providerUserId) {}
-
   /** Extra profile data surfaced in tokens and /userinfo. */
   @Bean
   Map<String, TestUser> testProfiles() {
@@ -262,7 +258,7 @@ public class OidcServerConfig {
       // Access token: include providerId so API can authorise with it
       if (OAuth2TokenType.ACCESS_TOKEN.equals(ctx.getTokenType())) {
         ctx.getClaims()
-            .audience(java.util.List.of("api-audience"))
+            .audience(List.of("api-audience"))
             .claim("FIRM_CODE", u.firmId())
             .claim("USER_NAME", u.providerUserId())
             .claim("roles", roles);

@@ -22,5 +22,6 @@ pluginManagement {
 rootProject.name = 'laa-claim-for-payment-stubs'
 
 include 'stub-civil-claims-api'
+include 'stub-oidc-server'
 // include 'spring-boot-microservice-service'
 

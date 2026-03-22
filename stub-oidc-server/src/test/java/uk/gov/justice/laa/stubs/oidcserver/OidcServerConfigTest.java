@@ -102,16 +102,16 @@ public class OidcServerConfigTest {
     }
 
     private static final TestUser USER_1 = new TestUser(
-        "alice",
-        "Alice Smith",
-        "alice.smith@example.test",
+        "joe",
+        "Joe Bloggs",
+        "joe.bloggs@example.test",
         "prov-123",
-        UUID.fromString("d9c4b277-941c-451c-81c4-6b46b7f7ab59"));
+        UUID.fromString("1faf90d6-e969-4d8e-beba-0e081ea62c60"));
 
     private static final TestUser USER_2 = new TestUser(
-        "bob",
-        "Bob Jones",
-        "bob.jones@example.test",
+        "john",
+        "John Doe",
+        "john.doe@example.test",
         "prov-456",
-        UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        UUID.fromString("b669b893-270f-4242-abec-96494da2ebf9"));
 }

@@ -4,6 +4,15 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,16 +47,6 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 /**
  * Configuration for the mock OIDC server, including security chains, registered clients, JWK
  * source, test users, and token customizer.
@@ -55,9 +54,6 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableWebSecurity
 public class OidcServerConfig {
-
-  private static final org.slf4j.Logger log =
-      org.slf4j.LoggerFactory.getLogger(OidcServerConfig.class);
 
   // ----- configurable bits (override in application.yml if you like) -----
   @Value("${auth.mock.issuer:http://localhost:8081}")

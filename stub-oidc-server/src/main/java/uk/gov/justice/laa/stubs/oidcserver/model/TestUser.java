@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.stubs.oidcserver;
+package uk.gov.justice.laa.stubs.oidcserver.model;
 
 import java.util.UUID;
 

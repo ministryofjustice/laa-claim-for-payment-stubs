@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.stubs.oidcserver;
+package uk.gov.justice.laa.stubs.oidcserver.config;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -36,6 +36,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -45,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Configuration for the mock OIDC server, including security chains, registered clients, JWK
@@ -209,22 +211,8 @@ public class OidcServerConfig {
 
   /** Extra profile data surfaced in tokens and /userinfo. */
   @Bean
-  Map<String, TestUser> testProfiles() {
-    return Map.of(
-        "alice",
-            new TestUser(
-                "alice",
-                "Alice Smith",
-                "alice.smith@example.test",
-                "prov-123",
-                UUID.fromString("d9c4b277-941c-451c-81c4-6b46b7f7ab59")),
-        "bob",
-            new TestUser(
-                "bob",
-                "Bob Jones",
-                "bob.jones@example.test",
-                "prov-456",
-                UUID.fromString("123e4567-e89b-12d3-a456-426614174000")));
+  Map<String, TestUser> testProfiles(ExternalConfig config) {
+    return config.getUsers().stream().collect(Collectors.toMap(TestUser::username, user -> user));
   }
 
   /** Add Entra-style + custom claims. */

@@ -8,6 +8,8 @@ auth:
 spring:
   thymeleaf:
     cache: false
+  config:
+    import: classpath:config/external.yml
 
     # used by actuator info endpoint
 info:

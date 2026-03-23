@@ -1,0 +1,12 @@
+external:
+  users:
+    - username: alice
+      displayName: Alice Smith
+      email: alice.smith@example.test
+      firmId: prov-123
+      providerUserId: d9c4b277-941c-451c-81c4-6b46b7f7ab59
+    - username: bob
+      displayName: Bob Jones
+      email: bob.jones@example.test
+      firmId: prov-456
+      providerUserId: 123e4567-e89b-12d3-a456-426614174000

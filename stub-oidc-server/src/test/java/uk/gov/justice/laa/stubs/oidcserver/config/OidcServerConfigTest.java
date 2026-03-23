@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.stubs.oidcserver;
+package uk.gov.justice.laa.stubs.oidcserver.config;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,11 +14,11 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,8 +30,10 @@ public class OidcServerConfigTest {
     @BeforeEach
     void setUp() {
         OidcServerConfig config = new OidcServerConfig();
-        List<TestUser> users = List.of(USER_1, USER_2);
-        Map<String, TestUser> profiles = users.stream().collect(Collectors.toMap(TestUser::username, user -> user));
+        Map<String, TestUser> profiles = Map.of(
+            USER_1.username(), USER_1,
+            USER_2.username(), USER_2
+        );
         this.customizer = config.tokenCustomizer(profiles);
     }
 

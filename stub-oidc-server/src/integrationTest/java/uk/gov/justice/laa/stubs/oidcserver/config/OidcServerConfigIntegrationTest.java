@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.stubs.oidcserver;
+package uk.gov.justice.laa.stubs.oidcserver.config;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

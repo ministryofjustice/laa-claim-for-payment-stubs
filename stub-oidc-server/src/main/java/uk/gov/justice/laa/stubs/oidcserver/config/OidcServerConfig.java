@@ -24,7 +24,7 @@ import org.springframework.security.config.annotation.web.configuration.OAuth2Au
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -201,16 +201,22 @@ public class OidcServerConfig {
 
   /** In-memory users for login form (alice/bob : password). */
   @Bean
-  UserDetailsService users(PasswordEncoder encoder) {
-    return new InMemoryUserDetailsManager(
-        User.withUsername("alice").password(encoder.encode("password")).roles("caseworker").build(),
-        User.withUsername("bob").password(encoder.encode("password")).roles("admin").build());
+  UserDetailsService users(PasswordEncoder encoder, Map<String, TestUser> profiles) {
+    List<UserDetails> users = profiles
+        .values()
+        .stream()
+        .map(x -> x.toUserDetails(encoder))
+        .toList();
+    return new InMemoryUserDetailsManager(users);
   }
 
   /** Extra profile data surfaced in tokens and /userinfo. */
   @Bean
   Map<String, TestUser> testProfiles(ExternalConfig config) {
-    return config.getUsers().stream().collect(Collectors.toMap(TestUser::username, user -> user));
+    return config
+        .getUsers()
+        .stream()
+        .collect(Collectors.toMap(TestUser::username, user -> user));
   }
 
   /** Add Entra-style + custom claims. */

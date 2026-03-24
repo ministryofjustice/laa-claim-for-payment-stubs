@@ -39,8 +39,8 @@ public class OidcServerConfigTest {
 
     @ParameterizedTest
     @MethodSource("users")
-    void idTokenCustomizerAddsClaims(TestUser user, String role) {
-        JwtEncodingContext context = buildContext(user.username(), role, new OAuth2TokenType(OidcParameterNames.ID_TOKEN));
+    void idTokenCustomizerAddsClaims(TestUser user) {
+        JwtEncodingContext context = buildContext(user, new OAuth2TokenType(OidcParameterNames.ID_TOKEN));
 
         customizer.customize(context);
 
@@ -49,7 +49,7 @@ public class OidcServerConfigTest {
         assertThat(claims.get("sub")).isEqualTo(user.username());
         assertThat(claims.get("FIRM_CODE")).isEqualTo(user.firmId());
         assertThat((claims.get("USER_NAME"))).isEqualTo(user.providerUserId());
-        assertThat((List<String>) claims.get("roles")).containsExactly(role);
+        assertThat(claims.get("roles")).isEqualTo(user.roles());
         assertThat(claims.get("email")).isEqualTo(user.email());
         assertThat(claims.get("name")).isEqualTo(user.displayName());
         assertThat(claims.get("preferred_username")).isEqualTo(user.username());
@@ -58,8 +58,8 @@ public class OidcServerConfigTest {
 
     @ParameterizedTest
     @MethodSource("users")
-    void accessTokenCustomizerAddsClaims(TestUser user, String role) {
-        JwtEncodingContext context = buildContext(user.username(), role, OAuth2TokenType.ACCESS_TOKEN);
+    void accessTokenCustomizerAddsClaims(TestUser user) {
+        JwtEncodingContext context = buildContext(user, OAuth2TokenType.ACCESS_TOKEN);
 
         customizer.customize(context);
 
@@ -68,21 +68,21 @@ public class OidcServerConfigTest {
         assertThat(claims.get("sub")).isEqualTo(user.username());
         assertThat(claims.get("FIRM_CODE")).isEqualTo(user.firmId());
         assertThat((claims.get("USER_NAME"))).isEqualTo(user.providerUserId());
-        assertThat((List<String>) claims.get("roles")).containsExactly(role);
+        assertThat(claims.get("roles")).isEqualTo(user.roles());
         assertThat(claims).doesNotContainKeys("email", "name", "preferred_username");
         assertThat(claims.get("aud")).isEqualTo(List.of("api-audience"));
     }
 
-    private JwtEncodingContext buildContext(String username, String role, OAuth2TokenType tokenType) {
+    private JwtEncodingContext buildContext(TestUser user, OAuth2TokenType tokenType) {
         Authentication principal = new UsernamePasswordAuthenticationToken(
-            username,
-            "password",
-            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+            user.username(),
+            user.password(),
+            user.roles().stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)).toList()
         );
 
         JwsHeader.Builder jwsHeaderBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
 
-        JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder().subject(username);
+        JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder().subject(user.username());
 
         return JwtEncodingContext.with(jwsHeaderBuilder, claimsBuilder)
             .principal(principal)
@@ -92,14 +92,8 @@ public class OidcServerConfigTest {
 
     private static Stream<Arguments> users() {
         return Stream.of(
-            Arguments.of(
-                USER_1,
-                "role1"
-            ),
-            Arguments.of(
-                USER_2,
-                "role2"
-            )
+            Arguments.of(USER_1),
+            Arguments.of(USER_2)
         );
     }
 
@@ -108,12 +102,16 @@ public class OidcServerConfigTest {
         "Joe Bloggs",
         "joe.bloggs@example.test",
         "prov-123",
-        UUID.fromString("1faf90d6-e969-4d8e-beba-0e081ea62c60"));
+        UUID.fromString("1faf90d6-e969-4d8e-beba-0e081ea62c60"),
+        "password",
+        List.of("role1"));
 
     private static final TestUser USER_2 = new TestUser(
         "john",
         "John Doe",
         "john.doe@example.test",
         "prov-456",
-        UUID.fromString("b669b893-270f-4242-abec-96494da2ebf9"));
+        UUID.fromString("b669b893-270f-4242-abec-96494da2ebf9"),
+        "password",
+        List.of("role2"));
 }

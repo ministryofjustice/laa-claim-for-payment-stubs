@@ -7,6 +7,7 @@ auth:
   mock:
     issuer: http://stub-oidc-server:8091
     redirect-ssr: http://localhost:3000/callback
+    logout-ssr: http://localhost:3000
 
 spring:
   config:

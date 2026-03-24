@@ -4,6 +4,7 @@ auth:
   mock:
     issuer: http://localhost:8091
     redirect-ssr: http://localhost:8080/login/oauth2/code/ssr
+    logout-ssr: http://localhost:3000
 
 spring:
   thymeleaf:

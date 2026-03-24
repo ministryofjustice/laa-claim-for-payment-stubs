@@ -15,16 +15,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class TestUserTest {
 
-    private PasswordEncoder encoder;
+  private PasswordEncoder encoder;
 
-    @BeforeEach
-    public void setUp() {
-        encoder = mock(PasswordEncoder.class);
-    }
+  @BeforeEach
+  public void setUp() {
+    encoder = mock(PasswordEncoder.class);
+  }
 
-    @Test
-    void toUserDetails_createsUserDetails_whenNoRoles() {
-        TestUser user = new TestUser(
+  @Test
+  void toUserDetails_createsUserDetails_whenNoRoles() {
+    TestUser user =
+        new TestUser(
             "joe",
             "Joe Bloggs",
             "joe.bloggs@example.test",
@@ -33,18 +34,19 @@ public class TestUserTest {
             "password123",
             List.of());
 
-        when(encoder.encode(any())).thenReturn("password456");
+    when(encoder.encode(any())).thenReturn("password456");
 
-        UserDetails result = user.toUserDetails(encoder);
+    UserDetails result = user.toUserDetails(encoder);
 
-        Assertions.assertThat(result.getUsername()).isEqualTo("joe");
-        Assertions.assertThat(result.getPassword()).isEqualTo("password456");
-        Assertions.assertThat(result.getAuthorities()).isEmpty();
-    }
+    Assertions.assertThat(result.getUsername()).isEqualTo("joe");
+    Assertions.assertThat(result.getPassword()).isEqualTo("password456");
+    Assertions.assertThat(result.getAuthorities()).isEmpty();
+  }
 
-    @Test
-    void toUserDetails_createsUserDetails_whenOneRole() {
-        TestUser user = new TestUser(
+  @Test
+  void toUserDetails_createsUserDetails_whenOneRole() {
+    TestUser user =
+        new TestUser(
             "joe",
             "Joe Bloggs",
             "joe.bloggs@example.test",
@@ -53,18 +55,20 @@ public class TestUserTest {
             "password123",
             List.of("role1"));
 
-        when(encoder.encode(any())).thenReturn("password456");
+    when(encoder.encode(any())).thenReturn("password456");
 
-        UserDetails result = user.toUserDetails(encoder);
+    UserDetails result = user.toUserDetails(encoder);
 
-        Assertions.assertThat(result.getUsername()).isEqualTo("joe");
-        Assertions.assertThat(result.getPassword()).isEqualTo("password456");
-        Assertions.assertThat(result.getAuthorities().toArray()).containsExactly(new SimpleGrantedAuthority("ROLE_role1"));
-    }
+    Assertions.assertThat(result.getUsername()).isEqualTo("joe");
+    Assertions.assertThat(result.getPassword()).isEqualTo("password456");
+    Assertions.assertThat(result.getAuthorities().toArray())
+        .containsExactly(new SimpleGrantedAuthority("ROLE_role1"));
+  }
 
-    @Test
-    void toUserDetails_createsUserDetails_whenMultipleRoles() {
-        TestUser user = new TestUser(
+  @Test
+  void toUserDetails_createsUserDetails_whenMultipleRoles() {
+    TestUser user =
+        new TestUser(
             "joe",
             "Joe Bloggs",
             "joe.bloggs@example.test",
@@ -73,12 +77,14 @@ public class TestUserTest {
             "password123",
             List.of("role1", "role2"));
 
-        when(encoder.encode(any())).thenReturn("password456");
+    when(encoder.encode(any())).thenReturn("password456");
 
-        UserDetails result = user.toUserDetails(encoder);
+    UserDetails result = user.toUserDetails(encoder);
 
-        Assertions.assertThat(result.getUsername()).isEqualTo("joe");
-        Assertions.assertThat(result.getPassword()).isEqualTo("password456");
-        Assertions.assertThat(result.getAuthorities().toArray()).containsExactly(new SimpleGrantedAuthority("ROLE_role1"), new SimpleGrantedAuthority("ROLE_role2"));
-    }
+    Assertions.assertThat(result.getUsername()).isEqualTo("joe");
+    Assertions.assertThat(result.getPassword()).isEqualTo("password456");
+    Assertions.assertThat(result.getAuthorities().toArray())
+        .containsExactly(
+            new SimpleGrantedAuthority("ROLE_role1"), new SimpleGrantedAuthority("ROLE_role2"));
+  }
 }

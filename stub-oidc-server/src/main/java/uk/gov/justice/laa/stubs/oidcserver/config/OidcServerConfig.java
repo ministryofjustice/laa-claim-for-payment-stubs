@@ -32,9 +32,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
-import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -202,21 +200,15 @@ public class OidcServerConfig {
   /** In-memory users for login form (alice/bob : password). */
   @Bean
   UserDetailsService users(Map<String, TestUser> profiles, PasswordEncoder encoder) {
-    List<UserDetails> users = profiles
-        .values()
-        .stream()
-        .map(x -> x.toUserDetails(encoder))
-        .toList();
+    List<UserDetails> users =
+        profiles.values().stream().map(x -> x.toUserDetails(encoder)).toList();
     return new InMemoryUserDetailsManager(users);
   }
 
   /** Extra profile data surfaced in tokens and /userinfo. */
   @Bean
   Map<String, TestUser> testProfiles(ExternalConfig config) {
-    return config
-        .getUsers()
-        .stream()
-        .collect(Collectors.toMap(TestUser::username, user -> user));
+    return config.getUsers().stream().collect(Collectors.toMap(TestUser::username, user -> user));
   }
 
   /** Add Entra-style + custom claims. */
@@ -227,11 +219,11 @@ public class OidcServerConfig {
       if (u != null) {
         var roles =
             ((Authentication) ctx.getPrincipal())
-              .getAuthorities().stream()
-              .map(GrantedAuthority::getAuthority) // e.g. "ROLE_admin"
-              .filter(a -> a.startsWith("ROLE_"))
-              .map(a -> a.substring(5)) // -> "admin"
-              .toList();
+                .getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority) // e.g. "ROLE_admin"
+                    .filter(a -> a.startsWith("ROLE_"))
+                    .map(a -> a.substring(5)) // -> "admin"
+                    .toList();
 
         // ID token: rich identity claims
         if (OidcParameterNames.ID_TOKEN.equals(ctx.getTokenType().getValue())) {

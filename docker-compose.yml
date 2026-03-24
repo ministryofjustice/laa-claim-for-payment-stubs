@@ -20,4 +20,4 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8091
     volumes:
-      - ./config/external.yml:/opt/stub-oidc-server/config/external.yml:ro
+      - ./stub-oidc-server/src/main/resources/config/external.yml:/opt/stub-oidc-server/config/external.yml:ro

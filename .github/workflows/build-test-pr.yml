@@ -28,11 +28,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test coverage verification (all modules that define it)
-        run: ./gradlew jacocoTestCoverageVerification
-
       - name: Integration test (all modules that define it)
         run: ./gradlew integrationTest --tests '*IntegrationTest'
+
+      - name: Test coverage verification (all modules that define it)
+        run: ./gradlew jacocoTestCoverageVerification
 
       - name: Publish package (all publishing-enabled modules)
         run: ./gradlew publish

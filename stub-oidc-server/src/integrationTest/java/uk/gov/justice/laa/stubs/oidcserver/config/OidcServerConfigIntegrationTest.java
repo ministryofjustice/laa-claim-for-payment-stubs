@@ -1,13 +1,26 @@
 package uk.gov.justice.laa.stubs.oidcserver.config;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -28,6 +41,14 @@ public class OidcServerConfigIntegrationTest {
             .perform(get("/.well-known/openid-configuration"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.issuer").value("http://localhost:8091"));
+    }
+
+    @Test
+    void actuatorReturnsUpStatus() throws Exception {
+        mockMvc
+            .perform(get("/actuator/health"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("UP"));
     }
 
     @ParameterizedTest
@@ -59,5 +80,46 @@ public class OidcServerConfigIntegrationTest {
                 .password("password"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/login?error"));
+    }
+
+    @Nested
+    class RegisteredClientRepositoryTests {
+
+        @Autowired
+        private RegisteredClientRepository registeredClientRepository;
+
+        @Test
+        void repositoryContainsBothClients() {
+            RegisteredClient ssr = registeredClientRepository.findByClientId("caa-client");
+            RegisteredClient machine = registeredClientRepository.findByClientId("machine");
+
+            assertThat(ssr).isNotNull();
+            assertThat(machine).isNotNull();
+        }
+
+
+        @Test
+        void ssrClientHasCorrectConfig() {
+            RegisteredClient ssr = registeredClientRepository.findByClientId("caa-client");
+
+            assertThat(ssr.getClientId()).isEqualTo("caa-client");
+            assertThat(ssr.getClientSecret()).isNotNull();
+            assertThat(ssr.getClientAuthenticationMethods()).containsOnly(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+            assertThat(ssr.getAuthorizationGrantTypes()).containsOnly(AuthorizationGrantType.AUTHORIZATION_CODE, AuthorizationGrantType.REFRESH_TOKEN);
+            assertThat(ssr.getRedirectUris()).containsOnly("http://localhost:8080/login/oauth2/code/ssr");
+            assertThat(ssr.getPostLogoutRedirectUris()).containsOnly("http://localhost:3000");
+            assertThat(ssr.getScopes()).containsOnly(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, "Claims.Write");
+        }
+
+        @Test
+        void machineClientHasCorrectConfig() {
+            RegisteredClient machine = registeredClientRepository.findByClientId("machine");
+
+            assertThat(machine.getClientId()).isEqualTo("machine");
+            assertThat(machine.getClientSecret()).isNotNull();
+            assertThat(machine.getClientAuthenticationMethods()).containsOnly(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+            assertThat(machine.getAuthorizationGrantTypes()).containsOnly(AuthorizationGrantType.CLIENT_CREDENTIALS);
+            assertThat(machine.getScopes()).containsOnly("Claims.Write");
+        }
     }
 }

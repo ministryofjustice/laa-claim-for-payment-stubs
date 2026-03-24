@@ -224,36 +224,34 @@ public class OidcServerConfig {
   OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(Map<String, TestUser> profiles) {
     return ctx -> {
       TestUser u = profiles.get(ctx.getPrincipal().getName());
-      if (u == null) {
-        return;
-      }
-
-      var roles =
-          ((Authentication) ctx.getPrincipal())
+      if (u != null) {
+        var roles =
+            ((Authentication) ctx.getPrincipal())
               .getAuthorities().stream()
-                  .map(GrantedAuthority::getAuthority) // e.g. "ROLE_admin"
-                  .filter(a -> a.startsWith("ROLE_"))
-                  .map(a -> a.substring(5)) // -> "admin"
-                  .toList();
+              .map(GrantedAuthority::getAuthority) // e.g. "ROLE_admin"
+              .filter(a -> a.startsWith("ROLE_"))
+              .map(a -> a.substring(5)) // -> "admin"
+              .toList();
 
-      // ID token: rich identity claims
-      if (OidcParameterNames.ID_TOKEN.equals(ctx.getTokenType().getValue())) {
-        ctx.getClaims()
-            .claim("name", u.displayName())
-            .claim("preferred_username", u.username())
-            .claim("email", u.email())
-            .claim("FIRM_CODE", u.firmId())
-            .claim("USER_NAME", u.providerUserId())
-            .claim("roles", roles);
-      }
+        // ID token: rich identity claims
+        if (OidcParameterNames.ID_TOKEN.equals(ctx.getTokenType().getValue())) {
+          ctx.getClaims()
+              .claim("name", u.displayName())
+              .claim("preferred_username", u.username())
+              .claim("email", u.email())
+              .claim("FIRM_CODE", u.firmId())
+              .claim("USER_NAME", u.providerUserId())
+              .claim("roles", roles);
+        }
 
-      // Access token: include providerId so API can authorise with it
-      if (OAuth2TokenType.ACCESS_TOKEN.equals(ctx.getTokenType())) {
-        ctx.getClaims()
-            .audience(List.of("api-audience"))
-            .claim("FIRM_CODE", u.firmId())
-            .claim("USER_NAME", u.providerUserId())
-            .claim("roles", roles);
+        // Access token: include providerId so API can authorise with it
+        if (OAuth2TokenType.ACCESS_TOKEN.equals(ctx.getTokenType())) {
+          ctx.getClaims()
+              .audience(List.of("api-audience"))
+              .claim("FIRM_CODE", u.firmId())
+              .claim("USER_NAME", u.providerUserId())
+              .claim("roles", roles);
+        }
       }
     };
   }

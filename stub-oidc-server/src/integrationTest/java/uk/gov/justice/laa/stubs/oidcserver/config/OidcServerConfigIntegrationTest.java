@@ -27,7 +27,7 @@ public class OidcServerConfigIntegrationTest {
         mockMvc
             .perform(get("/.well-known/openid-configuration"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.issuer").value("http://localhost:8081"));
+            .andExpect(jsonPath("$.issuer").value("http://localhost:8091"));
     }
 
     @ParameterizedTest

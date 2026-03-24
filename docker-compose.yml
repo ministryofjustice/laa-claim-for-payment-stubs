@@ -15,10 +15,7 @@ services:
       dockerfile: Dockerfile
     container_name: stub-oidc-server
     ports:
-      - "8081:8081"
+      - "8091:8091"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SERVER_PORT: 8081
-    volumes:
-      - ./config/external.yml:/opt/stub-oidc-server/config/external.yml:ro
-
+      SERVER_PORT: 8091

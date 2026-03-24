@@ -58,7 +58,7 @@ import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 public class OidcServerConfig {
 
   // ----- configurable bits (override in application.yml if you like) -----
-  @Value("${auth.mock.issuer:http://localhost:8081}")
+  @Value("${auth.mock.issuer:http://localhost:8091}")
   private String issuer;
 
   @Value("${auth.mock.redirect-ssr:http://localhost:3000/callback}")

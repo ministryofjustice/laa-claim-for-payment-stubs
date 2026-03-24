@@ -1,8 +1,8 @@
 server:
-  port: 8081
+  port: 8091
 auth:
   mock:
-    issuer: http://localhost:8081
+    issuer: http://localhost:8091
     redirect-ssr: http://localhost:8080/login/oauth2/code/ssr
 
 spring:

@@ -1,32 +1,28 @@
 package uk.gov.justice.laa.stubs.oidcserver.config;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.test.web.servlet.MockMvc;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Map;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -89,19 +85,10 @@ public class OidcServerConfigIntegrationTest {
         private RegisteredClientRepository registeredClientRepository;
 
         @Test
-        void repositoryContainsBothClients() {
-            RegisteredClient ssr = registeredClientRepository.findByClientId("caa-client");
-            RegisteredClient machine = registeredClientRepository.findByClientId("machine");
-
-            assertThat(ssr).isNotNull();
-            assertThat(machine).isNotNull();
-        }
-
-
-        @Test
         void ssrClientHasCorrectConfig() {
             RegisteredClient ssr = registeredClientRepository.findByClientId("caa-client");
 
+            assertThat(ssr).isNotNull();
             assertThat(ssr.getClientId()).isEqualTo("caa-client");
             assertThat(ssr.getClientSecret()).isNotNull();
             assertThat(ssr.getClientAuthenticationMethods()).containsOnly(ClientAuthenticationMethod.CLIENT_SECRET_POST);
@@ -115,11 +102,26 @@ public class OidcServerConfigIntegrationTest {
         void machineClientHasCorrectConfig() {
             RegisteredClient machine = registeredClientRepository.findByClientId("machine");
 
+            assertThat(machine).isNotNull();
             assertThat(machine.getClientId()).isEqualTo("machine");
             assertThat(machine.getClientSecret()).isNotNull();
             assertThat(machine.getClientAuthenticationMethods()).containsOnly(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
             assertThat(machine.getAuthorizationGrantTypes()).containsOnly(AuthorizationGrantType.CLIENT_CREDENTIALS);
             assertThat(machine.getScopes()).containsOnly("Claims.Write");
+        }
+    }
+
+    @Nested
+    class TestProfilesTest {
+
+        @Autowired
+        private Map<String, TestUser> testProfiles;
+
+        @Test
+        void testProfilesArePresent() {
+            assertThat(testProfiles).hasSize(2);
+            assertThat(testProfiles.get("alice")).isNotNull();
+            assertThat(testProfiles.get("bob")).isNotNull();
         }
     }
 }

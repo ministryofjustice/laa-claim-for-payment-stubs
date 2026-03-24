@@ -8,6 +8,7 @@ test {
     finalizedBy jacocoTestReport
 }
 
+
 jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
@@ -15,6 +16,11 @@ jacocoTestReport {
                 '**/MockOidcApplication.class'
             ])
         }))
+
+        executionData fileTree(dir: "$buildDir/jacoco", includes: [
+            "test.exec",
+            "integrationTest.exec"
+        ])
     }
 }
 
@@ -25,6 +31,11 @@ jacocoTestCoverageVerification {
                 '**/MockOidcApplication.class'
             ])
         }))
+
+        executionData fileTree(dir: "$buildDir/jacoco", includes: [
+            "test.exec",
+            "integrationTest.exec"
+        ])
     }
 }
 

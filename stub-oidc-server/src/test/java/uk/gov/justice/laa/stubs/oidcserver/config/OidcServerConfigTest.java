@@ -1,6 +1,8 @@
 package uk.gov.justice.laa.stubs.oidcserver.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.nimbusds.jose.JOSEException;
@@ -12,7 +14,9 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -26,14 +30,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
@@ -113,10 +117,16 @@ public class OidcServerConfigTest {
         }
 
         private JwtEncodingContext buildContext(TestUser user, OAuth2TokenType tokenType) {
+          List<SimpleGrantedAuthority> authorities = user
+            .roles()
+            .stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+            .toList();
+
             Authentication principal = new UsernamePasswordAuthenticationToken(
                 user.username(),
                 user.password(),
-                user.roles().stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)).toList()
+                authorities
             );
 
             JwsHeader.Builder jwsHeaderBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
@@ -160,6 +170,46 @@ public class OidcServerConfigTest {
             assertThat(rsaKey.getKeyID()).isEqualTo("mock-rsa");
             assertThat(rsaKey.toRSAPublicKey()).isNotNull();
             assertThat(rsaKey.toRSAPrivateKey()).isNotNull();
+        }
+    }
+
+    @Nested
+    @ExtendWith(MockitoExtension.class)
+    class UserDetailsServiceTest {
+
+      private UserDetailsService userDetailsService;
+
+        @BeforeEach
+        void setUp() {
+            OidcServerConfig config = new OidcServerConfig();
+            Map<String, TestUser> profiles = Map.of(
+              USER_1.username(), USER_1,
+              USER_2.username(), USER_2
+            );
+            PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+            when(passwordEncoder.encode(any())).thenReturn("ENC_password");
+            this.userDetailsService = config.users(passwordEncoder, profiles);
+        }
+
+        @ParameterizedTest
+        @MethodSource("users")
+        void testTestProfilesBean(TestUser user) {
+            UserDetails result = userDetailsService.loadUserByUsername(user.username());
+
+            Set<SimpleGrantedAuthority> authorities = user
+              .roles()
+              .stream()
+              .map(x -> new SimpleGrantedAuthority("ROLE_" + x))
+              .collect(Collectors.toSet());
+
+            assertThat(result).isNotNull();
+            assertThat(result.getUsername()).isEqualTo(user.username());
+            assertThat(result.getPassword()).isEqualTo("ENC_password");
+            assertThat(result.getAuthorities()).isEqualTo(authorities);
+        }
+
+        private static Stream<Arguments> users() {
+            return Stream.of(Arguments.of(USER_1), Arguments.of(USER_2));
         }
     }
 

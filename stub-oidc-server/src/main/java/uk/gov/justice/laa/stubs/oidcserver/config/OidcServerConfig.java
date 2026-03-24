@@ -201,7 +201,7 @@ public class OidcServerConfig {
 
   /** In-memory users for login form (alice/bob : password). */
   @Bean
-  UserDetailsService users(PasswordEncoder encoder, Map<String, TestUser> profiles) {
+  UserDetailsService users(Map<String, TestUser> profiles, PasswordEncoder encoder) {
     List<UserDetails> users = profiles
         .values()
         .stream()

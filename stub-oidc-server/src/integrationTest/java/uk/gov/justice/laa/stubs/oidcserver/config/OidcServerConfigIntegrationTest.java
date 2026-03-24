@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
@@ -122,6 +123,19 @@ public class OidcServerConfigIntegrationTest {
             assertThat(testProfiles).hasSize(2);
             assertThat(testProfiles.get("alice")).isNotNull();
             assertThat(testProfiles.get("bob")).isNotNull();
+        }
+    }
+
+    @Nested
+    class AuthorizationServerSettingsTests {
+
+        @Autowired
+        private AuthorizationServerSettings authorizationServerSettings;
+
+        @Test
+        void testAuthorizationServerSettingsArePresent() {
+            assertThat(authorizationServerSettings).isNotNull();
+            assertThat(authorizationServerSettings.getIssuer()).isEqualTo("http://localhost:8091");
         }
     }
 }

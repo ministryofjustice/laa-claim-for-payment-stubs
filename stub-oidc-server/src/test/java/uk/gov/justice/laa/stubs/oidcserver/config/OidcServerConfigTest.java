@@ -21,17 +21,15 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -174,10 +172,9 @@ public class OidcServerConfigTest {
     }
 
     @Nested
-    @ExtendWith(MockitoExtension.class)
     class UserDetailsServiceTest {
 
-      private UserDetailsService userDetailsService;
+        private UserDetailsService userDetailsService;
 
         @BeforeEach
         void setUp() {
@@ -188,7 +185,7 @@ public class OidcServerConfigTest {
             );
             PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
             when(passwordEncoder.encode(any())).thenReturn("ENC_password");
-            this.userDetailsService = config.users(passwordEncoder, profiles);
+            this.userDetailsService = config.users(profiles, passwordEncoder);
         }
 
         @ParameterizedTest
@@ -210,6 +207,23 @@ public class OidcServerConfigTest {
 
         private static Stream<Arguments> users() {
             return Stream.of(Arguments.of(USER_1), Arguments.of(USER_2));
+        }
+    }
+
+    @Nested
+    class PasswordEncoderTests {
+
+        private PasswordEncoder passwordEncoder;
+
+        @BeforeEach
+        void setUp() {
+            OidcServerConfig config = new OidcServerConfig();
+            this.passwordEncoder = config.passwordEncoder();
+        }
+
+        @Test
+        void testAuthorizationServerSettingsArePresent() {
+            assertThat(passwordEncoder).isInstanceOf(BCryptPasswordEncoder.class);
         }
     }
 

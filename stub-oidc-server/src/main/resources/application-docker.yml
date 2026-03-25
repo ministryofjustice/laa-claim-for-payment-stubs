@@ -1,0 +1,14 @@
+logging:
+  level:
+    root: DEBUG
+    org.springframework.security.oauth2.server.authorization.authentication: TRACE
+
+auth:
+  mock:
+    issuer: http://stub-oidc-server:8091
+    redirect-ssr: http://localhost:3000/callback
+    logout-ssr: http://localhost:3000
+
+spring:
+  config:
+    import: file:/opt/stub-oidc-server/config/external.yml

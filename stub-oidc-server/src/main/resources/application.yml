@@ -1,0 +1,41 @@
+server:
+  port: 8091
+auth:
+  mock:
+    issuer: http://localhost:8091
+    redirect-ssr: http://localhost:8080/login/oauth2/code/ssr
+    logout-ssr: http://localhost:3000
+
+spring:
+  thymeleaf:
+    cache: false
+  config:
+    import: classpath:config/external.yml
+
+    # used by actuator info endpoint
+info:
+  app:
+    name: OIDC Mock Server
+    description: mock oidc for laa-claim-for-payment
+    version: 1.0.0
+
+management:
+  server:
+    base-path: /actuator
+  # specify actuator endpoints to enable
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+  # show detailed health status
+  endpoint:
+    health:
+      show-details: always
+
+  info:
+    env:
+      enabled: true
+
+stub-oidc-server:
+  client-secret: mock-secret

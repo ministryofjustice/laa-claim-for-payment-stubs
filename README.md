@@ -31,6 +31,14 @@ Includes the following subprojects:
 
 ## Build And Run Application
 
+### Hostname mapping
+The issuer for the `stub-oidc-server` should be set to `http://stub-oidc-server:8091`.
+For this to work in a browser, the hostname `stub-oidc-server` must resolve to your local machine. We achieve this by mapping it to `127.0.0.1` (localhost) in the `/etc/hosts` file.
+
+Run the following command:
+
+`sudo echo "127.0.0.1 stub-oidc-server" | sudo tee -a /etc/hosts`
+
 ### Build application
 `./gradlew clean build`
 

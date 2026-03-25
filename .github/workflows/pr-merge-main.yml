@@ -126,13 +126,13 @@ jobs:
             context: ./stub-civil-claims-api
             dockerfile: ./stub-civil-claims-api/Dockerfile
             ecr-repository: ${{ vars.STUB_CIVIL_CLAIMS_API_ECR_REPOSITORY}}
-            role-to-assume: ${{ secrets.STUB_CIVIL_CLAIMS_API_ECR_ROLE_TO_ASSUME }}
+            role-to-assume: STUB_CIVIL_CLAIMS_API_ECR_ROLE_TO_ASSUME
             aws-region: ${{ vars.STUB_CIVIL_CLAIMS_API_ECR_REGION}}
           - name: stub-oidc-server
             context: ./stub-oidc-server
             dockerfile: ./stub-oidc-server/Dockerfile
             ecr-repository: ${{ vars.STUB_OIDC_SERVER_ECR_REPOSITORY }}
-            role-to-assume: ${{ secrets.STUB_OIDC_SERVER_ECR_ROLE_TO_ASSUME }}
+            role-to-assume: STUB_OIDC_SERVER_ECR_ROLE_TO_ASSUME
             aws-region: ${{ vars.STUB_OIDC_SERVER_ECR_REGION }}
     env:
       IMAGE_TAG: ${{ github.sha }}
@@ -155,7 +155,7 @@ jobs:
       - name: Configure AWS creds (BFF)
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ matrix.role-to-assume }}
+          role-to-assume: ${{ secrets[matrix.role-to-assume] }}
           aws-region: ${{ matrix.aws-region }}
       - name: login to registry
         uses: aws-actions/amazon-ecr-login@v2

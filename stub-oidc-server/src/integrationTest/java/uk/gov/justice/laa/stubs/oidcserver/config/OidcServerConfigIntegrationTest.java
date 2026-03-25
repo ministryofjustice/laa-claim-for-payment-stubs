@@ -81,20 +81,42 @@ public class OidcServerConfigIntegrationTest {
     @Autowired private RegisteredClientRepository registeredClientRepository;
 
     @Test
-    void ssrClientHasCorrectConfig() {
-      RegisteredClient ssr = registeredClientRepository.findByClientId("caa-client");
+    void claimFrontEndClientHasCorrectConfig() {
+      RegisteredClient claimFrontEndClient =
+          registeredClientRepository.findByClientId("caa-client");
 
-      assertThat(ssr).isNotNull();
-      assertThat(ssr.getClientId()).isEqualTo("caa-client");
-      assertThat(ssr.getClientSecret()).isNotNull();
-      assertThat(ssr.getClientAuthenticationMethods())
+      assertThat(claimFrontEndClient).isNotNull();
+      assertThat(claimFrontEndClient.getClientSecret()).isNotNull();
+      assertThat(claimFrontEndClient.getClientAuthenticationMethods())
           .containsOnly(ClientAuthenticationMethod.CLIENT_SECRET_POST);
-      assertThat(ssr.getAuthorizationGrantTypes())
+      assertThat(claimFrontEndClient.getAuthorizationGrantTypes())
           .containsOnly(
               AuthorizationGrantType.AUTHORIZATION_CODE, AuthorizationGrantType.REFRESH_TOKEN);
-      assertThat(ssr.getRedirectUris()).containsOnly("http://localhost:8080/login/oauth2/code/ssr");
-      assertThat(ssr.getPostLogoutRedirectUris()).containsOnly("http://localhost:3000");
-      assertThat(ssr.getScopes())
+      assertThat(claimFrontEndClient.getRedirectUris())
+          .containsOnly("http://localhost:3000/callback");
+      assertThat(claimFrontEndClient.getPostLogoutRedirectUris())
+          .containsOnly("http://localhost:3000");
+      assertThat(claimFrontEndClient.getScopes())
+          .containsOnly(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, "Claims.Write");
+    }
+
+    @Test
+    void assessFrontEndClientHasCorrectConfig() {
+      RegisteredClient assessFrontEndClient =
+          registeredClientRepository.findByClientId("afe-client");
+
+      assertThat(assessFrontEndClient).isNotNull();
+      assertThat(assessFrontEndClient.getClientSecret()).isNotNull();
+      assertThat(assessFrontEndClient.getClientAuthenticationMethods())
+          .containsOnly(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+      assertThat(assessFrontEndClient.getAuthorizationGrantTypes())
+          .containsOnly(
+              AuthorizationGrantType.AUTHORIZATION_CODE, AuthorizationGrantType.REFRESH_TOKEN);
+      assertThat(assessFrontEndClient.getRedirectUris())
+          .containsOnly("http://localhost:3001/callback");
+      assertThat(assessFrontEndClient.getPostLogoutRedirectUris())
+          .containsOnly("http://localhost:3001");
+      assertThat(assessFrontEndClient.getScopes())
           .containsOnly(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, "Claims.Write");
     }
 

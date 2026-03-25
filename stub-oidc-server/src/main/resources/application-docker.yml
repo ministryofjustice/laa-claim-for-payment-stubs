@@ -6,8 +6,10 @@ logging:
 auth:
   mock:
     issuer: http://stub-oidc-server:8091
-    redirect-ssr: http://localhost:3000/callback
-    logout-ssr: http://localhost:3000
+    redirect-cfe: http://localhost:3000/callback
+    logout-cfe: http://localhost:3000
+    redirect-afe: http://localhost:3001/callback
+    logout-afe: http://localhost:3001
 
 spring:
   config:

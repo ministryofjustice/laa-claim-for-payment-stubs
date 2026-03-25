@@ -92,7 +92,7 @@ public class OidcServerConfigIntegrationTest {
       assertThat(ssr.getAuthorizationGrantTypes())
           .containsOnly(
               AuthorizationGrantType.AUTHORIZATION_CODE, AuthorizationGrantType.REFRESH_TOKEN);
-      assertThat(ssr.getRedirectUris()).containsOnly("http://localhost:8080/login/oauth2/code/ssr");
+      assertThat(ssr.getRedirectUris()).containsOnly("http://localhost:3000/callback");
       assertThat(ssr.getPostLogoutRedirectUris()).containsOnly("http://localhost:3000");
       assertThat(ssr.getScopes())
           .containsOnly(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, "Claims.Write");

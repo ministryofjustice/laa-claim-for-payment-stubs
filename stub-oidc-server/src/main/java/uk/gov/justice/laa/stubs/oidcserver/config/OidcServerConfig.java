@@ -61,11 +61,17 @@ public class OidcServerConfig {
   @Value("${auth.mock.issuer:http://localhost:8091}")
   private String issuer;
 
-  @Value("${auth.mock.redirect-ssr:http://localhost:3000/callback}")
-  private String ssrRedirect;
+  @Value("${auth.mock.redirect-cfe:http://localhost:3000/callback}")
+  private String cfeRedirect;
 
-  @Value("${auth.mock.logout-ssr:http://localhost:3000}")
-  private String ssrLogout;
+  @Value("${auth.mock.logout-cfe:http://localhost:3000}")
+  private String cfeLogout;
+
+  @Value("${auth.mock.redirect-afe:http://localhost:3001/callback}")
+  private String afeRedirect;
+
+  @Value("${auth.mock.logout-afe:http://localhost:3001}")
+  private String afeLogout;
 
   @Value("${stub-oidc-server.client-secret:mock-secret}")
   private String clientSecret;
@@ -146,15 +152,30 @@ public class OidcServerConfig {
   @Bean
   RegisteredClientRepository registeredClientRepository(PasswordEncoder encoder) {
 
-    RegisteredClient ssr =
+    RegisteredClient claimFrontEndClient =
         RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("caa-client")
             .clientSecret(encoder.encode(clientSecret))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-            .redirectUri(ssrRedirect)
-            .postLogoutRedirectUri(ssrLogout)
+            .redirectUri(cfeRedirect)
+            .postLogoutRedirectUri(cfeLogout)
+            .scope(OidcScopes.OPENID)
+            .scope(OidcScopes.PROFILE)
+            .scope(OidcScopes.EMAIL)
+            .scope("Claims.Write")
+            .build();
+
+    RegisteredClient assessFrontEndClient =
+        RegisteredClient.withId(UUID.randomUUID().toString())
+            .clientId("afe-client")
+            .clientSecret(encoder.encode(clientSecret))
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            .redirectUri(afeRedirect)
+            .postLogoutRedirectUri(afeLogout)
             .scope(OidcScopes.OPENID)
             .scope(OidcScopes.PROFILE)
             .scope(OidcScopes.EMAIL)
@@ -171,7 +192,8 @@ public class OidcServerConfig {
             .scope("Claims.Write") // match what your API checks (e.g. SCOPE_Claims.Write')
             .build();
 
-    return new InMemoryRegisteredClientRepository(ssr, machine);
+    return new InMemoryRegisteredClientRepository(
+        claimFrontEndClient, assessFrontEndClient, machine);
   }
 
   @Bean

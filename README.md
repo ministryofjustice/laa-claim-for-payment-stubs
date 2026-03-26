@@ -27,9 +27,6 @@ Includes the following subprojects:
 - `stub-civil-claims-api` - spring boot based REST api to simulate expected civil claims api.
 - `stub-oidc-server` - an OIDC provider stub built with Spring Boot.
 
-
-</details>
-
 ## Build And Run Application
 
 ### Hostname mapping
@@ -38,7 +35,7 @@ For this to work in a browser, the hostname `stub-oidc-server` must resolve to y
 
 Run the following command:
 
-`sudo echo "127.0.0.1 stub-oidc-server" | sudo tee -a /etc/hosts`
+`echo "127.0.0.1 stub-oidc-server" | sudo tee -a /etc/hosts`
 
 ### Build application
 `./gradlew clean build`

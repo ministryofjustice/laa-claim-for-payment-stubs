@@ -25,6 +25,7 @@ more information regarding setup and usage.
 Includes the following subprojects:
 
 - `stub-civil-claims-api` - spring boot based REST api to simulate expected civil claims api.
+- `stub-oidc-server` - an OIDC provider stub built with Spring Boot.
 
 
 </details>

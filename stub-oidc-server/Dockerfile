@@ -14,4 +14,4 @@ USER 1001
 
 EXPOSE 8091
 
-CMD java -jar app.jar
+CMD ["java", "-jar", "app.jar"]

@@ -7,8 +7,6 @@ auth:
     logout-ssr: http://localhost:3000
 
 spring:
-  thymeleaf:
-    cache: false
   config:
     import: classpath:config/external.yml
 

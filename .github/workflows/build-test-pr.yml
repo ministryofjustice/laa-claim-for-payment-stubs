@@ -8,12 +8,13 @@ permissions:
   contents: read
   packages: write
 
-env:
-  ACTION_CHECKOUT: ${{ vars.ACTION_CHECKOUT }}
-
 jobs:
   build-test:
     runs-on: ubuntu-latest
+
+    env:
+      ACTION_CHECKOUT: ${{ vars.ACTION_CHECKOUT }}
+
     steps:
       - uses: ${{ env.ACTION_CHECKOUT }}
 

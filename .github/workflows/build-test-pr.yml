@@ -11,18 +11,8 @@ permissions:
 jobs:
   build-test:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: ${{ vars.ACTION_CHECKOUT }}
-
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          java-version: 25
-          distribution: 'corretto'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+      - uses: ./.github/actions/toolchain_setup
 
       - name: Build and test (all modules)
         run: ./gradlew build

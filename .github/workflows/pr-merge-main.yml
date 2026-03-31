@@ -236,17 +236,65 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ministryofjustice
 
-      - name: Trigger and Wait for E2E Tests
-        uses: the-actions-org/workflow-dispatch@3133c5d135c7dbe4be4f9793872b6ef331b53bc7 #v4.0.0
-        with:
-          workflow: qa-ci.yml
-          # Combine owner and repo name here:
-          repo: ministryofjustice/claim-assess-regression-tests
-          token: ${{ steps.generate_token.outputs.token }}
-          ref: main
-          # inputs: '{"environment": "uat"}'
-          wait-for-completion: true
-          display-workflow-run-url: true
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ steps.generate_token.outputs.token }}" | gh auth login --with-token
+
+      - name: Set environment variables
+        run: |
+          echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
+          echo "CORRELATION_ID=$(uuidgen)" >> $GITHUB_ENV
+
+      - name: Trigger E2E workflow run
+        run: |
+          gh workflow run qa-ci.yml \
+            --repo $REPO \
+            --ref main \
+            --field correlation_id=$CORRELATION_ID
+
+      - name: Get the E2E workflow run ID
+        run: |
+          while true; do
+            RUN_ID=$(gh run list \
+              --repo $REPO \
+              --workflow qa-ci.yml \
+              --branch main \
+              --json databaseId,displayTitle,status \
+              --jq 'map(select(.displayTitle | contains("'"$CORRELATION_ID"'"))) | .[0].databaseId // empty')
+
+            if [ -n "$RUN_ID" ]; then
+              echo "Found workflow run: $RUN_ID"
+              echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+              break
+            fi
+
+            sleep 5
+          done
+
+      - name: Wait for E2E workflow run to finish
+        run: |
+          while true; do
+            RUN_INFO=$(gh run view "$RUN_ID" \
+            --repo "$REPO" \
+            --json status,conclusion)
+
+            STATUS=$(echo "$RUN_INFO" | jq -r '.status')
+            CONCLUSION=$(echo "$RUN_INFO" | jq -r '.conclusion')
+
+            echo "Status: $STATUS"
+
+            if [ "$STATUS" == "completed" ]; then
+              echo "Conclusion: $CONCLUSION"
+              if [ "$CONCLUSION" != "success" ]; then
+                echo "❌ E2E tests failed."
+                exit 1
+              fi
+              echo "✅ E2E tests passed."
+              break
+            fi
+
+            sleep 10
+          done
 
   stub-civil-claims-deploy-uat:
     environment: uat

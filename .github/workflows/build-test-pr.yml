@@ -78,6 +78,9 @@ jobs:
       - name: Authenticate GitHub CLI
         run: |
           echo "${{ steps.generate_token.outputs.token }}" | gh auth login --with-token
+
+      - name: Set environment variables
+        run: |
           echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
           echo "CORRELATION_ID=$(uuidgen)" >> $GITHUB_ENV
 
@@ -89,31 +92,19 @@ jobs:
             --field stubs_branch=main \
             --field correlation_id=$CORRELATION_ID
 
-      - name: Wait for E2E workflow run to start
+      - name: Get the E2E workflow run ID
         run: |
           while true; do
-            sleep 5
-            echo "----- DEBUG: Full gh run list output -----"
-  
-            gh run list \
-              --repo "$REPO" \
-              --workflow qa-ci.yml \
-              --branch main \
-              --limit 5 \
-              --json attempt,conclusion,createdAt,databaseId,displayTitle,event,headBranch,headSha,name,number,startedAt,status,updatedAt,url,workflowDatabaseId,workflowName \
-              --jq '.[]'
-            
-  
-            echo "----- END DEBUG -----"
-              
-  
             RUN_ID=$(gh run list \
               --repo $REPO \
               --workflow qa-ci.yml \
-              --branch main \
+              --branch CLAS-231 \
               --limit 1 \
-              --json databaseId,status \
-              --jq '.[0].databaseId // empty')
+              --json databaseId,displayTitle,status \
+              --jq --arg CID "$CORRELATION_ID" '
+                map(select(.displayTitle | contains($CID))) |
+                .[0].databaseId // empty
+              ')
 
             if [ -n "$RUN_ID" ]; then
               echo "Found workflow run: $RUN_ID"
@@ -132,7 +123,7 @@ jobs:
             --json status,conclusion)
 
             STATUS=$(echo "$RUN_INFO" | jq -r '.status')
-            CONCLUSION=$(echo "$RUN_INFO" | jq -r '.conclusion
+            CONCLUSION=$(echo "$RUN_INFO" | jq -r '.conclusion')
 
             echo "Status: $STATUS — Conclusion: $CONCLUSION"
 

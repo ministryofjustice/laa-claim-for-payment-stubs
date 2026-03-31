@@ -92,11 +92,16 @@ jobs:
           while true; do
             sleep 5
             echo "----- DEBUG: Full gh run list output -----"
-              gh run list \
+  
+            gh run list \
               --repo "$REPO" \
               --workflow qa-ci.yml \
-              --branch main
-              
+              --branch main \
+              --limit 5 \
+              --json databaseId,status,actor,event \
+              --jq '.[]'
+            
+  
             echo "----- END DEBUG -----"
               
   

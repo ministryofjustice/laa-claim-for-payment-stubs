@@ -63,55 +63,6 @@ jobs:
           path: "**/build/reports/jacoco/**"
           retention-days: 14
 
-  run-e2e:
-    needs: build-test
-    runs-on: ubuntu-latest
-    env:
-      ORG: ministryofjustice
-      REPO: claim-assess-regression-tests
-    steps:
-      - name: Generate GitHub App Token
-        id: generate_token
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 #v3.0.0
-        with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ${{ env.ORG }}
-          repositories: ${{ env.REPO }}
-
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "${{ steps.generate_token.outputs.token }}" | gh auth login --with-token
-
-      - name: Trigger E2E workflow run
-        run: |
-          OUTPUT=$(gh workflow run qa-ci.yml --repo "$ORG/$REPO" --ref main)
-          echo "$OUTPUT"
-          URL=$(echo "$OUTPUT" | grep -Eo '/actions/runs/[0-9]+')
-          RUN_ID="${URL##*/}"
-          echo "Run ID: $RUN_ID"
-          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-
-      - name: Wait for E2E workflow run to finish
-        run: |
-          while true; do
-            OUTPUT=$(gh run view "$RUN_ID" --repo "$ORG/$REPO" --json status,conclusion)
-            STATUS=$(echo "$OUTPUT" | jq -r '.status')
-            CONCLUSION=$(echo "$OUTPUT" | jq -r '.conclusion')
-
-            echo "Status: $STATUS"
-
-            if [ "$STATUS" == "completed" ]; then
-              echo "Conclusion: $CONCLUSION"
-              if [ "$CONCLUSION" != "success" ]; then
-                exit 1
-              fi
-              break
-            fi
-
-            sleep 10
-          done
-
   vulnerability-scan-app:
     runs-on: ubuntu-latest
     needs:

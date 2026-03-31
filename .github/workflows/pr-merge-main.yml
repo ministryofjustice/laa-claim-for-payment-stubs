@@ -283,10 +283,8 @@ jobs:
             if [ "$STATUS" == "completed" ]; then
               echo "Conclusion: $CONCLUSION"
               if [ "$CONCLUSION" != "success" ]; then
-                echo "❌ E2E tests failed."
                 exit 1
               fi
-              echo "✅ E2E tests passed."
               break
             fi
 

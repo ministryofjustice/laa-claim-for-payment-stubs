@@ -84,7 +84,7 @@ jobs:
           echo "*"
           echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
           echo "**"
-          FULL_OUTPUT=$(gh workflow run qa-ci.yml --repo "$REPO" --ref main)
+          FULL_OUTPUT=$(gh workflow run qa-ci.yml --repo ministryofjustice/claim-assess-regression-tests --ref main)
           echo "***"
           echo "$FULL_OUTPUT"
           echo "****"

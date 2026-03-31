@@ -99,7 +99,6 @@ jobs:
               --repo $REPO \
               --workflow qa-ci.yml \
               --branch CLAS-231 \
-              --limit 1 \
               --json databaseId,displayTitle,status \
               --jq --arg CID "$CORRELATION_ID" '
                 map(select(.displayTitle | contains($CID))) |

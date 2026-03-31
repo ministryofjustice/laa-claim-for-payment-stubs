@@ -81,12 +81,19 @@ jobs:
 
       - name: Trigger E2E workflow run
         run: |
+          echo "*"
           echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
+          echo "**"
           FULL_OUTPUT=$(gh workflow run qa-ci.yml --repo "$REPO" --ref main)
+          echo "***"
           echo "$FULL_OUTPUT"
+          echo "****"
           URL=$(echo "$FULL_OUTPUT" | tail -n1)
+          echo "*****"
           RUN_ID="${URL##*/}"
+          echo "******"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "*******"
         shell: bash
 
       - name: Wait for E2E workflow run to finish

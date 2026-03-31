@@ -63,6 +63,75 @@ jobs:
           path: "**/build/reports/jacoco/**"
           retention-days: 14
 
+  run-e2e:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App Token
+        id: generate_token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 #v3.0.0
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ministryofjustice
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ steps.generate_token.outputs.token }}" | gh auth login --with-token
+          echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
+
+      - name: Trigger
+        run: |
+          gh workflow run qa-ci.yml \
+            --repo $REPO \
+            --ref main \
+            --field stubs_branch=main
+
+      - name: Wait for the E2E workflow run to start
+        run: |
+          while true; do
+            RUN_ID=$(gh run list \
+              --repo $REPO \
+              --workflow qa-ci.yml \
+              --branch main \
+              --limit 1 \
+              --json databaseId,status \
+              --jq '.[0].databaseId // empty')
+
+            if [ -n "$RUN_ID" ]; then
+              echo "Found workflow run: $RUN_ID"
+              echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+              break
+            fi
+
+            sleep 5
+          done
+
+      - name: Waiting for workflow run to finish
+        run: |
+          while true; do
+            RUN_INFO=$(gh run view "$RUN_ID" \
+            --repo "$REPO" \
+            --json status,conclusion)
+
+            STATUS=$(echo "$RUN_INFO" | jq -r '.status')
+            CONCLUSION=$(echo "$RUN_INFO" | jq -r '.conclusion
+
+            echo "Status: $STATUS — Conclusion: $CONCLUSION"
+
+            if [ "$STATUS" == "completed" ]; then
+              if [ "$CONCLUSION" != "success" ]; then
+                echo "❌ E2E tests failed."
+                exit 1
+              fi
+
+              echo "✅ E2E tests passed."
+              break
+            fi
+
+            sleep 10
+          done
+
   vulnerability-scan-app:
     runs-on: ubuntu-latest
     needs:

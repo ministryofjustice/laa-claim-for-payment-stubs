@@ -83,7 +83,7 @@ jobs:
         run: |
           echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
           URL=$(gh workflow run qa-ci.yml \
-            --repo $REPO \
+            --repo "$REPO" \
             --ref main)
           echo "$URL"
           echo "RUN_ID=${URL##*/}" >> $GITHUB_ENV

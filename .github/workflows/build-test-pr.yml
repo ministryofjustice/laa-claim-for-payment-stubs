@@ -100,10 +100,7 @@ jobs:
               --workflow qa-ci.yml \
               --branch CLAS-231 \
               --json databaseId,displayTitle,status \
-              --jq --arg CID "$CORRELATION_ID" '
-                map(select(.displayTitle | contains($CID))) |
-                .[0].databaseId // empty
-              ')
+              --jq 'map(select(.displayTitle | contains("'"$CORRELATION_ID"'"))) | .[0].databaseId // empty')
 
             if [ -n "$RUN_ID" ]; then
               echo "Found workflow run: $RUN_ID"

@@ -98,7 +98,7 @@ jobs:
               --workflow qa-ci.yml \
               --branch main \
               --limit 5 \
-              --json databaseId,status,actor,event \
+              --json attempt,conclusion,createdAt,databaseId,displayTitle,event,headBranch,headSha,name,number,startedAt,status,updatedAt,url,workflowDatabaseId,workflowName \
               --jq '.[]'
             
   

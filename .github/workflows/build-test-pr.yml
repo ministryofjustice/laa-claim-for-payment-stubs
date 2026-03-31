@@ -79,13 +79,15 @@ jobs:
         run: |
           echo "${{ steps.generate_token.outputs.token }}" | gh auth login --with-token
           echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
+          echo "CORRELATION_ID=$(uuidgen)" >> $GITHUB_ENV
 
       - name: Trigger E2E workflow run
         run: |
           gh workflow run qa-ci.yml \
             --repo $REPO \
-            --ref main \
-            --field stubs_branch=main
+            --ref CLAS-231 \
+            --field stubs_branch=main \
+            --field correlation_id=$CORRELATION_ID
 
       - name: Wait for E2E workflow run to start
         run: |

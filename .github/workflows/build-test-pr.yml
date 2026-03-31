@@ -82,17 +82,40 @@ jobs:
 
       - name: Trigger E2E workflow run
         run: |
-          OUTPUT=$(gh workflow run qa-ci.yml \
-          --repo "$REPO" \
-          --ref main \
-          --field stubs_branch=main)
-          
-          echo "$OUTPUT"
-          
-          # Extract the run ID from the printed URL
-          RUN_ID=$(echo "$OUTPUT" | grep -oE 'actions/runs/[0-9]+' | grep -oE '[0-9]+')
-          
-          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          gh workflow run qa-ci.yml \
+            --repo $REPO \
+            --ref main \
+            --field stubs_branch=main
+
+      - name: Wait for E2E workflow run to start
+        run: |
+          while true; do
+            sleep 5
+            echo "----- DEBUG: Full gh run list output -----"
+              gh run list \
+              --repo "$REPO" \
+              --workflow qa-ci.yml \
+              --branch main
+              
+            echo "----- END DEBUG -----"
+              
+  
+            RUN_ID=$(gh run list \
+              --repo $REPO \
+              --workflow qa-ci.yml \
+              --branch main \
+              --limit 1 \
+              --json databaseId,status \
+              --jq '.[0].databaseId // empty')
+
+            if [ -n "$RUN_ID" ]; then
+              echo "Found workflow run: $RUN_ID"
+              echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+              break
+            fi
+
+            sleep 5
+          done
 
       - name: Wait for E2E workflow run to finish
         run: |

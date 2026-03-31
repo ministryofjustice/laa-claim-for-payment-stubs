@@ -227,6 +227,9 @@ jobs:
   run-e2e:
     needs: ecr
     runs-on: ubuntu-latest
+    env:
+      ORG: ministryofjustice
+      REPO: claim-assess-regression-tests
     steps:
       - name: Generate GitHub App Token
         id: generate_token
@@ -234,7 +237,8 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ministryofjustice
+          owner: ${{ env.ORG }}
+          repositories: ${{ env.REPO }}
 
       - name: Authenticate GitHub CLI
         run: |
@@ -242,41 +246,19 @@ jobs:
 
       - name: Trigger E2E workflow run
         run: |
-          echo "REPO=ministryofjustice/claim-assess-regression-tests" >> $GITHUB_ENV
-          echo "CORRELATION_ID=$(uuidgen)" >> $GITHUB_ENV
-          gh workflow run qa-ci.yml \
-            --repo $REPO \
-            --ref main \
-            --field correlation_id=$CORRELATION_ID
-
-      - name: Get the E2E workflow run ID
-        run: |
-          while true; do
-            RUN_ID=$(gh run list \
-              --repo $REPO \
-              --workflow qa-ci.yml \
-              --branch main \
-              --json databaseId,displayTitle,status \
-              --jq 'map(select(.displayTitle | contains("'"$CORRELATION_ID"'"))) | .[0].databaseId // empty')
-
-            if [ -n "$RUN_ID" ]; then
-              echo "Found workflow run: $RUN_ID"
-              echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-              break
-            fi
-
-            sleep 5
-          done
+          OUTPUT=$(gh workflow run qa-ci.yml --repo "$ORG/$REPO" --ref main)
+          echo "$OUTPUT"
+          URL=$(echo "$OUTPUT" | grep -Eo '/actions/runs/[0-9]+')
+          RUN_ID="${URL##*/}"
+          echo "Run ID: $RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
       - name: Wait for E2E workflow run to finish
         run: |
           while true; do
-            RUN_INFO=$(gh run view "$RUN_ID" \
-              --repo "$REPO" \
-              --json status,conclusion)
-
-            STATUS=$(echo "$RUN_INFO" | jq -r '.status')
-            CONCLUSION=$(echo "$RUN_INFO" | jq -r '.conclusion')
+            OUTPUT=$(gh run view "$RUN_ID" --repo "$ORG/$REPO" --json status,conclusion)
+            STATUS=$(echo "$OUTPUT" | jq -r '.status')
+            CONCLUSION=$(echo "$OUTPUT" | jq -r '.conclusion')
 
             echo "Status: $STATUS"
 

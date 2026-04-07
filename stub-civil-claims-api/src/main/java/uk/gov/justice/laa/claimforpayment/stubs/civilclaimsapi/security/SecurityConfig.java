@@ -9,6 +9,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -31,7 +32,9 @@ public class SecurityConfig {
   SecurityFilterChain h2ConsoleSecurityFilterChain(HttpSecurity http) throws Exception {
     var h2 = PathPatternRequestMatcher.withDefaults().matcher("/h2-console/**");
 
-    http.securityMatcher(h2)
+    http.sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .securityMatcher(h2)
         .authorizeHttpRequests(a -> a.anyRequest().permitAll())
         // H2 console does posts without CSRF token
         .csrf(c -> c.ignoringRequestMatchers(h2))
@@ -46,7 +49,9 @@ public class SecurityConfig {
   SecurityFilterChain http(HttpSecurity http, ObjectProvider<JwtDecoder> jwtDecoderProvider)
       throws Exception {
     log.info("USING REAL SECURITY CONFIG");
-    http.authorizeHttpRequests(
+    http.sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
                         "/",

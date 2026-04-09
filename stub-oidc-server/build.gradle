@@ -6,8 +6,11 @@ plugins {
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+    testLogging {
+        events "passed", "skipped", "failed", "standard_out", "standard_error"
+        showStandardStreams = true
+    }
 }
-
 
 jacocoTestReport {
     afterEvaluate {
@@ -61,4 +64,6 @@ dependencies {
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
   testImplementation "org.springframework.security:spring-security-test"
+
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

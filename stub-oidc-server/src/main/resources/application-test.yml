@@ -1,0 +1,11 @@
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
+
+
+
+auth:
+  mock:
+    redirect-cfe: http://localhost:3000/callback
+    issuer: http://localhost

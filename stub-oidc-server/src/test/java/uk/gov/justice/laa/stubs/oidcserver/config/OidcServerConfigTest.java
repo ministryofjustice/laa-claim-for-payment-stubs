@@ -1,10 +1,17 @@
 package uk.gov.justice.laa.stubs.oidcserver.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKMatcher;
@@ -12,6 +19,7 @@ import com.nimbusds.jose.jwk.JWKSelector;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,11 +27,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,13 +48,121 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
+@SpringBootTest
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
 public class OidcServerConfigTest {
+
+  private static final org.slf4j.Logger log =
+      org.slf4j.LoggerFactory.getLogger(OidcServerConfigTest.class);
+
+  @Autowired private MockMvc mockMvc;
+
+  @Autowired private RegisteredClientRepository registeredClientRepository;
+
+  @Autowired private JwtDecoder jwtDecoder;
+
+  @Nested
+  class TokenRequestTests {
+
+    @Test
+    @DisplayName("Front-end client should not be able to request scope for arbitrary API")
+    void frontEndClientCannotRequestApiToken() throws Exception {
+
+      RegisteredClient client = registeredClientRepository.findByClientId("caa-client");
+      String someOtherApiScope = "https://admin-api/claims_write";
+      assertThrows(Exception.class, () -> authenticateAndReturnCode(client, someOtherApiScope));
+    }
+
+    @Test
+    @DisplayName("Front-end client should be able to request scope for claims API")
+    void frontEndClientCanRequestClaimsApiToken() throws Exception {
+
+      RegisteredClient client = registeredClientRepository.findByClientId("caa-client");
+      String apiScope = "https://claims-api/claims_write";
+      String code = authenticateAndReturnCode(client, apiScope);
+
+      MvcResult result =
+          mockMvc
+              .perform(
+                  post("/oauth2/token")
+                      .param("grant_type", "authorization_code")
+                      .param("code", code)
+                      .param("client_id", "caa-client")
+                      .param("client_secret", "mock-secret")
+                      .param("scope", apiScope)
+                      .param("redirect_uri", "http://localhost:3000/callback"))
+              .andExpect(jsonPath("$.access_token").exists())
+              .andExpect(status().isOk())
+              .andReturn();
+
+      String responseBody = result.getResponse().getContentAsString();
+      String accessToken = JsonPath.read(responseBody, "$.access_token");
+
+      Jwt jwt = jwtDecoder.decode(accessToken);
+
+      assertThat(jwt.getAudience()).contains("https://claims-api");
+      assertThat(jwt.getClaimAsStringList("scope")).contains("https://claims-api/claims_write");
+    }
+
+    private String authenticateAndReturnCode(RegisteredClient client, String apiScope)
+        throws Exception {
+
+      String redirect = client.getRedirectUris().iterator().next();
+      MvcResult authoriseResult =
+          mockMvc
+              .perform(
+                  get("/oauth2/authorize")
+                      .queryParam("response_type", "code")
+                      .queryParam("client_id", client.getClientId())
+                      .queryParam("redirect_uri", redirect)
+                      .queryParam("scope", "openid " + apiScope)
+                      .queryParam("state", "state"))
+              .andExpect(status().is3xxRedirection())
+              .andReturn();
+
+      MockHttpSession session = (MockHttpSession) authoriseResult.getRequest().getSession(false);
+
+      MvcResult loginResult =
+          mockMvc
+              .perform(
+                  post("/login")
+                      .session(session)
+                      .param("username", "alice")
+                      .param("password", "password")
+                      .with(csrf()))
+              .andExpect(status().is3xxRedirection())
+              .andReturn();
+
+      String continueUrl = loginResult.getResponse().getHeader("Location");
+
+      MvcResult finalResult =
+          mockMvc
+              .perform(get(URI.create(continueUrl)).session(session).accept(MediaType.TEXT_HTML))
+              .andReturn();
+
+      String redirectedUrl = finalResult.getResponse().getHeader("Location");
+
+      return UriComponentsBuilder.fromUriString(redirectedUrl)
+          .build()
+          .getQueryParams()
+          .getFirst("code");
+    }
+  }
 
   @Nested
   class CustomizerTests {
@@ -116,7 +238,7 @@ public class OidcServerConfigTest {
       assertThat((claims.get("USER_NAME"))).isEqualTo(user.providerUserId());
       assertThat(claims.get("roles")).isEqualTo(user.roles());
       assertThat(claims).doesNotContainKeys("email", "name", "preferred_username");
-      assertThat(claims.get("aud")).isEqualTo(List.of("api-audience"));
+      assertThat(claims.get("aud")).isEqualTo(List.of("https://claims-api"));
     }
 
     private JwtEncodingContext buildContext(TestUser user, OAuth2TokenType tokenType) {
@@ -129,10 +251,12 @@ public class OidcServerConfigTest {
       JwsHeader.Builder jwsHeaderBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
 
       JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder().subject(user.username());
+      Set<String> authorizedScopes = Set.of("openid", "profile", "https://claims-api/claims_write");
 
       return JwtEncodingContext.with(jwsHeaderBuilder, claimsBuilder)
           .principal(principal)
           .tokenType(tokenType)
+          .authorizedScopes(authorizedScopes)
           .build();
     }
 

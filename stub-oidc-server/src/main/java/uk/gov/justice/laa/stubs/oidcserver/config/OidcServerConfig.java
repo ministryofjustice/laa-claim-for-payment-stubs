@@ -174,7 +174,8 @@ public class OidcServerConfig {
             AuthorizationGrantType.AUTHORIZATION_CODE,
             cfeRedirect,
             List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            false);
+            false,
+            cfeLogout);
 
     RegisteredClient assessFrontEndClient =
         buildRegisteredClient(
@@ -184,7 +185,8 @@ public class OidcServerConfig {
             AuthorizationGrantType.AUTHORIZATION_CODE,
             afeRedirect,
             List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            false);
+            false,
+            afeLogout);
 
     return new InMemoryRegisteredClientRepository(claimFrontEndClient, assessFrontEndClient);
   }
@@ -202,7 +204,8 @@ public class OidcServerConfig {
             AuthorizationGrantType.AUTHORIZATION_CODE,
             cfeRedirect,
             List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            true);
+            true,
+            cfeLogout);
 
     RegisteredClient assessFrontEndClient =
         buildRegisteredClient(
@@ -212,7 +215,8 @@ public class OidcServerConfig {
             AuthorizationGrantType.AUTHORIZATION_CODE,
             afeRedirect,
             List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            true);
+            true,
+            afeLogout);
 
     log.debug(
         "Test client repo loaded, caa-client requireProofKey={}",
@@ -329,7 +333,8 @@ public class OidcServerConfig {
       AuthorizationGrantType grantType,
       String redirectUri,
       List<String> scopes,
-      boolean disablePkceInTest) {
+      boolean disablePkceInTest,
+      String logoutUri) {
 
     ClientSettings clientSettings =
         ClientSettings.builder()
@@ -345,6 +350,7 @@ public class OidcServerConfig {
                     ? ClientAuthenticationMethod.CLIENT_SECRET_BASIC
                     : ClientAuthenticationMethod.CLIENT_SECRET_POST)
             .authorizationGrantType(grantType)
+            .postLogoutRedirectUri(logoutUri)
             .clientSettings(clientSettings);
 
     if (grantType == AuthorizationGrantType.AUTHORIZATION_CODE) {

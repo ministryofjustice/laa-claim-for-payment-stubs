@@ -8,6 +8,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,33 +29,54 @@ import org.springframework.security.config.annotation.web.configuration.OAuth2Au
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
+import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.context.AuthorizationServerContextHolder;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.token.DefaultOAuth2TokenContext;
+import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.JwtGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2AccessTokenGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2RefreshTokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
 /**
@@ -66,7 +90,6 @@ public class OidcServerConfig {
   private static final org.slf4j.Logger log =
       org.slf4j.LoggerFactory.getLogger(OidcServerConfig.class);
 
-  // ----- configurable bits (override in application.yml if you like) -----
   @Value("${auth.mock.issuer:http://localhost:8091}")
   private String issuer;
 
@@ -97,14 +120,80 @@ public class OidcServerConfig {
     return new HttpSessionRequestCache();
   }
 
-  /** Authorisation Server endpoints (discovery, authorize, token, jwks, userinfo). */
+  @Bean
+  public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+    return new NimbusJwtEncoder(jwkSource);
+  }
+
+  /**
+   * Token generator that supports JWT encoding with our custom claims, as well as refresh and
+   * opaque access tokens (if needed). The custom JWT generator is needed to support the OBO flow.
+   */
+  @Bean
+  public OAuth2TokenGenerator<?> tokenGenerator(
+      JwtEncoder jwtEncoder, OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer) {
+
+    // This handles BOTH JWT Access Tokens and OIDC ID Tokens
+    JwtGenerator jwtGenerator = new JwtGenerator(jwtEncoder);
+    jwtGenerator.setJwtCustomizer(tokenCustomizer);
+    OAuth2RefreshTokenGenerator refreshTokenGenerator = new OAuth2RefreshTokenGenerator();
+    OAuth2AccessTokenGenerator accessTokenGenerator = new OAuth2AccessTokenGenerator();
+
+    return new DelegatingOAuth2TokenGenerator(
+        jwtGenerator, refreshTokenGenerator, accessTokenGenerator);
+  }
+
+  /**
+   * Authorization Server security filter chain, with custom token endpoint config to support JWT
+   * bearer.
+   */
   @Bean
   @Order(1)
-  public SecurityFilterChain authorizationServer(HttpSecurity http, Map<String, TestUser> profiles)
+  public SecurityFilterChain authorizationServer(
+      HttpSecurity http,
+      OAuth2AuthorizationService authorizationService,
+      OAuth2TokenGenerator<?> tokenGenerator,
+      Map<String, TestUser> profiles)
       throws Exception {
 
     OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
         new OAuth2AuthorizationServerConfigurer();
+
+    // this seems to be needed to support the JWT bearer grant type, which isn't natively supported
+    // by Spring's default converters but is required by Entra.
+    authorizationServerConfigurer.tokenEndpoint(
+        tokenEndpoint -> {
+          tokenEndpoint.accessTokenRequestConverters(
+              converters -> {
+                converters.add(
+                    0,
+                    request -> {
+                      String grantType = request.getParameter("grant_type");
+                      String tokenUse = request.getParameter("requested_token_use");
+                      if (!"urn:ietf:params:oauth:grant-type:jwt-bearer".equals(grantType)
+                          || !"on_behalf_of".equals(tokenUse)) {
+                        return null;
+                      }
+
+                      String assertion = request.getParameter("assertion");
+                      if (assertion == null || assertion.isEmpty()) {
+                        return null;
+                      }
+
+                      // Get the client principal (already verified by the filter)
+                      Authentication clientPrincipal =
+                          SecurityContextHolder.getContext().getAuthentication();
+                      Set<String> requestedScopes =
+                          StringUtils.commaDelimitedListToSet(request.getParameter("scope"));
+
+                      // Pass the assertion in the parameters map
+                      return new Oauth2JwtBearerAuthenticationToken(
+                          clientPrincipal, assertion, requestedScopes);
+                    });
+              });
+          tokenEndpoint.authenticationProvider(
+              jwtBearerAuthenticationProvider(authorizationService, tokenGenerator));
+        });
 
     http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
         .securityContext(
@@ -114,11 +203,10 @@ public class OidcServerConfig {
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .exceptionHandling(
             ex -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .csrf(
             csrf ->
-                csrf.ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher()))
+                csrf.requireCsrfProtectionMatcher(
+                    request -> !request.getServletPath().startsWith("/oauth2/")))
         .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
         .apply(authorizationServerConfigurer);
 
@@ -188,7 +276,10 @@ public class OidcServerConfig {
             false,
             afeLogout);
 
-    return new InMemoryRegisteredClientRepository(claimFrontEndClient, assessFrontEndClient);
+    RegisteredClient claimsApiClient = getClaimsApiClient(encoder);
+
+    return new InMemoryRegisteredClientRepository(
+        claimFrontEndClient, assessFrontEndClient, claimsApiClient);
   }
 
   @Bean
@@ -218,11 +309,22 @@ public class OidcServerConfig {
             true,
             afeLogout);
 
-    log.debug(
-        "Test client repo loaded, caa-client requireProofKey={}",
-        claimFrontEndClient.getClientSettings().isRequireProofKey());
+    RegisteredClient claimsApiClient = getClaimsApiClient(encoder);
 
-    return new InMemoryRegisteredClientRepository(claimFrontEndClient, assessFrontEndClient);
+    return new InMemoryRegisteredClientRepository(
+        claimFrontEndClient, assessFrontEndClient, claimsApiClient);
+  }
+
+  private RegisteredClient getClaimsApiClient(PasswordEncoder encoder) {
+    return RegisteredClient.withId(UUID.randomUUID().toString())
+        .clientId("https://claims-api")
+        .clientSecret(encoder.encode("mock-secret"))
+        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+        .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+        .authorizationGrantType(
+            new AuthorizationGrantType("urn:ietf:params:oauth:grant-type:jwt-bearer"))
+        .scope("https://downstream-api/data_read")
+        .build();
   }
 
   @Bean
@@ -230,7 +332,6 @@ public class OidcServerConfig {
     return AuthorizationServerSettings.builder().issuer(issuer).build();
   }
 
-  /** JWK for signing tokens; JWKS exposed automatically at /oauth2/jwks. */
   @Bean
   JWKSource<SecurityContext> jwkSource() {
     try {
@@ -366,5 +467,92 @@ public class OidcServerConfig {
     RegisteredClient client = builder.build();
     log.debug("AuthorizationGrantTypes: {}", client.getAuthorizationGrantTypes());
     return client;
+  }
+
+  private AuthenticationProvider jwtBearerAuthenticationProvider(
+      OAuth2AuthorizationService authService,
+      OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator) {
+
+    return new AuthenticationProvider() {
+      @Override
+      public Authentication authenticate(Authentication authentication)
+          throws AuthenticationException {
+        Oauth2JwtBearerAuthenticationToken jwtGrant =
+            (Oauth2JwtBearerAuthenticationToken) authentication;
+
+        RegisteredClient client =
+            ((OAuth2ClientAuthenticationToken) jwtGrant.getPrincipal()).getRegisteredClient();
+
+        Object assertionObj = jwtGrant.getAdditionalParameters().get("assertion");
+        String assertionValue = String.valueOf(assertionObj);
+
+        String userSubject;
+
+        try {
+          userSubject =
+              com.nimbusds.jwt.JWTParser.parse(assertionValue).getJWTClaimsSet().getSubject();
+        } catch (Exception e) {
+          throw new OAuth2AuthenticationException(
+              new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST),
+              "Malformed or invalid assertion JWT",
+              e);
+        }
+
+        Authentication userPrincipal =
+            new UsernamePasswordAuthenticationToken(userSubject, null, Collections.emptyList());
+        // stub: we trust the assertion and just issue the next token.
+        OAuth2Authorization authorization =
+            OAuth2Authorization.withRegisteredClient(client)
+                .principalName(userSubject)
+                .authorizationGrantType(jwtGrant.getGrantType())
+                .authorizedScopes(jwtGrant.getScopes())
+                .build();
+
+        var contextBuilder =
+            DefaultOAuth2TokenContext.builder()
+                .registeredClient(client)
+                .principal(userPrincipal)
+                .authorizationServerContext(AuthorizationServerContextHolder.getContext())
+                .authorization(authorization)
+                .authorizedScopes(jwtGrant.getScopes())
+                .tokenType(OAuth2TokenType.ACCESS_TOKEN)
+                .authorizationGrantType(jwtGrant.getGrantType())
+                .authorizationGrant(jwtGrant);
+
+        OAuth2Token generatedToken = tokenGenerator.generate(contextBuilder.build());
+
+        if (generatedToken == null) {
+          throw new OAuth2AuthenticationException(OAuth2ErrorCodes.SERVER_ERROR);
+        }
+
+        Jwt jwt = (Jwt) generatedToken;
+        Set<String> authorizedScopes = jwtGrant.getScopes();
+        OAuth2AccessToken accessToken =
+            new OAuth2AccessToken(
+                OAuth2AccessToken.TokenType.BEARER,
+                jwt.getTokenValue(),
+                jwt.getIssuedAt(),
+                jwt.getExpiresAt(),
+                authorizedScopes);
+
+        // 2. Update the Authorization record using the original jwt (for claims metadata)
+        OAuth2Authorization.Builder authBuilder =
+            OAuth2Authorization.from(authorization)
+                .token(
+                    accessToken,
+                    metadata ->
+                        metadata.put(
+                            OAuth2Authorization.Token.CLAIMS_METADATA_NAME, jwt.getClaims()));
+
+        authService.save(authBuilder.build());
+
+        return new OAuth2AccessTokenAuthenticationToken(client, jwtGrant, accessToken);
+      }
+
+      @Override
+      public boolean supports(Class<?> auth) {
+        return Oauth2JwtBearerAuthenticationToken.class.isAssignableFrom(auth);
+      }
+    };
   }
 }

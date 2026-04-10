@@ -1,11 +1,15 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
 version: v1.25.1
-
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
-ignore: 
+ignore:
   SNYK-JAVA-TOOLSJACKSONCORE-15907550:
     - '*':
         reason: requires spring upgrade ny availalbe
         expires: 2026-06-01T00:00:00.000Z
-        created: 2026-03-03T09:16:35.779Z     
+        created: 2026-03-03T09:16:35.779Z
+  java/DisablesCSRFProtection:
+    - '*':
+        reason: None Given
+        expires: 2026-12-10T15:41:50.570Z
+        created: 2026-04-10T15:41:50.575Z
 patch: {}

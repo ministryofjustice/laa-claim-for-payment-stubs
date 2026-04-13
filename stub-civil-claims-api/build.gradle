@@ -68,7 +68,7 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // Force the entire Jackson ecosystem to 2.21.1
-    implementation(platform("com.fasterxml.jackson:jackson-bom:2.21.1")) {
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.21.2")) {
         version {
             strictly '2.21.1'
         }

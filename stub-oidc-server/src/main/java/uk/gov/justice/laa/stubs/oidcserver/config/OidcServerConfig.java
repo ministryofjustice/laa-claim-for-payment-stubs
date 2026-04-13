@@ -535,7 +535,6 @@ public class OidcServerConfig {
                 jwt.getExpiresAt(),
                 authorizedScopes);
 
-        // 2. Update the Authorization record using the original jwt (for claims metadata)
         OAuth2Authorization.Builder authBuilder =
             OAuth2Authorization.from(authorization)
                 .token(

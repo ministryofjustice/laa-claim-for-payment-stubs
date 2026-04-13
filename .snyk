@@ -7,9 +7,4 @@ ignore:
         reason: requires spring upgrade ny availalbe
         expires: 2026-06-01T00:00:00.000Z
         created: 2026-03-03T09:16:35.779Z
-  java/DisablesCSRFProtection:
-    - '*':
-        reason: None Given
-        expires: 2026-12-10T15:41:50.570Z
-        created: 2026-04-10T15:41:50.575Z
 patch: {}

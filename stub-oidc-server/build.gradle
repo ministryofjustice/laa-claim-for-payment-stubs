@@ -6,10 +6,10 @@ plugins {
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
-    testLogging {
-        events "passed", "skipped", "failed", "standard_out", "standard_error"
-        showStandardStreams = true
-    }
+    // testLogging {
+    //     events "passed", "skipped", "failed", "standard_out", "standard_error"
+    //     showStandardStreams = true
+    // }
 }
 
 jacocoTestReport {
@@ -61,6 +61,7 @@ dependencies {
   implementation 'org.springframework.security:spring-security-oauth2-authorization-server'
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server' // /userinfo reads JWT
   implementation 'commons-logging:commons-logging:1.3.6'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.21'
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
   testImplementation "org.springframework.security:spring-security-test"

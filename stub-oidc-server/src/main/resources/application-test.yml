@@ -1,7 +1,21 @@
 logging:
   level:
-    root: INFO
+    root: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.security.oauth2.server.authorization: TRACE
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.oauth2.server.authorization.client: DEBUG
+    org.springframework.security.oauth2.server.authorization.web.authentication.AuthorizationCodeRequestValidatingFilter: TRACE
+    org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationEndpointFilter: TRACE
+    org.springframework.security.oauth2.server.authorization.web: TRACE
+    org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService: TRACE
+    org.springframework.security.oauth2.server.authorization.authentication: TRACE
+    org.springframework.security.web.util.matcher: TRACE
+    org.springframework.security.web.savedrequest: TRACE
+    org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeRequestAuthenticationConverter: TRACE
+    org.springframework.security.oauth2.server.authorization.web.authentication: TRACE
+
+
 
 
 

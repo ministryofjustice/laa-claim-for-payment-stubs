@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -117,6 +118,59 @@ public class OidcServerConfigTest {
 
       assertThat(jwt.getAudience()).contains("https://claims-api");
       assertThat(jwt.getClaimAsStringList("scope")).contains("https://claims-api/claims_write");
+    }
+
+    @Test
+    @DisplayName(
+        "Claims API client should be able to exchange access token for downstream access token"
+            + " scopes")
+    void apiClientCanExchangeToken() throws Exception {
+      RegisteredClient client = registeredClientRepository.findByClientId("caa-client");
+      String apiScope = "https://claims-api/claims_write";
+      String code = authenticateAndReturnCode(client, apiScope);
+      MvcResult result =
+          mockMvc
+              .perform(
+                  post("/oauth2/token")
+                      .param("grant_type", "authorization_code")
+                      .param("code", code)
+                      .param("client_id", "caa-client")
+                      .param("client_secret", "mock-secret")
+                      .param("scope", apiScope)
+                      .param("redirect_uri", "http://localhost:3000/callback"))
+              .andExpect(jsonPath("$.access_token").exists())
+              .andExpect(status().isOk())
+              .andReturn();
+
+      String responseBody = result.getResponse().getContentAsString();
+      String accessToken = JsonPath.read(responseBody, "$.access_token");
+
+      MvcResult oboResult =
+          mockMvc
+              .perform(
+                  post("/oauth2/token")
+                      .contentType(
+                          org.springframework.http.MediaType
+                              .APPLICATION_FORM_URLENCODED) 
+                      .param("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                      .param("assertion", accessToken) 
+                      .param("client_id", "https://claims-api") 
+                      .param("client_secret", "mock-secret")
+                      .param("scope", "https://downstream-api/data_read")
+                      .param("requested_token_use", "on_behalf_of"))
+              .andExpect(status().isOk())
+              .andDo(print())
+              .andReturn();
+
+      String exchangeResponseBody = oboResult.getResponse().getContentAsString();
+      String downstreamToken = JsonPath.read(exchangeResponseBody, "$.access_token");
+
+      Jwt decodedJwt = jwtDecoder.decode(downstreamToken);
+
+
+      assertThat(decodedJwt.getSubject()).isEqualTo("alice"); // Identity is preserved
+      assertThat(decodedJwt.getAudience())
+          .contains("https://downstream-api"); // Audience has shifted
     }
 
     private String authenticateAndReturnCode(RegisteredClient client, String apiScope)

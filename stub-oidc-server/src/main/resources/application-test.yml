@@ -15,11 +15,30 @@ logging:
     org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeRequestAuthenticationConverter: TRACE
     org.springframework.security.oauth2.server.authorization.web.authentication: TRACE
 
-
+spring:
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          caa-client:
+            settings:
+              client:
+                require-proof-key: false 
+                redirect-uris: ["http://localhost:3000/callback"]
+                post-logout-redirect-uris: ["http://localhost:3000"]
+          afe-client:
+            settings:
+              client:
+                require-proof-key: false
+                redirect-uris: ["http://localhost:3001/callback"]
+                post-logout-redirect-uris: ["http://localhost:3001"]   
 
 
 
 auth:
   mock:
     redirect-cfe: http://localhost:3000/callback
-    issuer: http://localhost
+    issuer: http://localhost:8091
+    logout-cfe: http://localhost:3000
+    redirect-afe: http://localhost:3001/callback
+    logout-afe: http://localhost:3001

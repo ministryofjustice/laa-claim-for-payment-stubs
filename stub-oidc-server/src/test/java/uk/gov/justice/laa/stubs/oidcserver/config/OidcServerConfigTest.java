@@ -45,6 +45,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -104,7 +105,7 @@ public class OidcServerConfigTest {
                       .param("grant_type", "authorization_code")
                       .param("code", code)
                       .param("client_id", "caa-client")
-                      .param("client_secret", "mock-secret")
+                      .param("client_secret", "caa-mock-secret")
                       .param("scope", apiScope)
                       .param("redirect_uri", "http://localhost:3000/callback"))
               .andExpect(jsonPath("$.access_token").exists())
@@ -135,7 +136,7 @@ public class OidcServerConfigTest {
                       .param("grant_type", "authorization_code")
                       .param("code", code)
                       .param("client_id", "caa-client")
-                      .param("client_secret", "mock-secret")
+                      .param("client_secret", "caa-mock-secret")
                       .param("scope", apiScope)
                       .param("redirect_uri", "http://localhost:3000/callback"))
               .andExpect(jsonPath("$.access_token").exists())
@@ -155,7 +156,7 @@ public class OidcServerConfigTest {
                       .param("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
                       .param("assertion", accessToken) 
                       .param("client_id", "https://claims-api") 
-                      .param("client_secret", "mock-secret")
+                      .param("client_secret", "api-mock-secret")
                       .param("scope", "https://downstream-api/data_read")
                       .param("requested_token_use", "on_behalf_of"))
               .andExpect(status().isOk())
@@ -397,7 +398,7 @@ public class OidcServerConfigTest {
 
     @Test
     void testAuthorizationServerSettingsArePresent() {
-      assertThat(passwordEncoder).isInstanceOf(BCryptPasswordEncoder.class);
+      assertThat(passwordEncoder).isInstanceOf(DelegatingPasswordEncoder.class);
     }
   }
 

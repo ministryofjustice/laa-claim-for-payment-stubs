@@ -16,9 +16,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,7 +34,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -43,7 +43,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.OAuth2Token;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -85,6 +84,7 @@ import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
  */
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(AuthorizationServerClientsProperties.class)
 public class OidcServerConfig {
 
   private static final org.slf4j.Logger log =
@@ -93,26 +93,49 @@ public class OidcServerConfig {
   @Value("${auth.mock.issuer:http://localhost:8091}")
   private String issuer;
 
-  @Value("${auth.mock.redirect-cfe:http://localhost:3000/callback}")
-  private String cfeRedirect;
-
-  @Value("${auth.mock.logout-cfe:http://localhost:3000}")
-  private String cfeLogout;
-
-  @Value("${auth.mock.redirect-afe:http://localhost:3001/callback}")
-  private String afeRedirect;
-
-  @Value("${auth.mock.logout-afe:http://localhost:3001}")
-  private String afeLogout;
-
-  @Value("${stub-oidc-server.client-secret:mock-secret}")
-  private String clientSecret;
-
-  private String claimsApiScope = "https://claims-api/claims_write";
-
   @Bean
   OAuth2AuthorizationService authorizationService(RegisteredClientRepository clients) {
     return new InMemoryOAuth2AuthorizationService();
+  }
+
+  @Bean
+  RegisteredClientRepository registeredClientRepository(
+      AuthorizationServerClientsProperties properties) {
+
+    var clients = properties.getClient().values().stream().map(this::toRegisteredClient).toList();
+
+    return new InMemoryRegisteredClientRepository(clients);
+  }
+
+  private RegisteredClient toRegisteredClient(AuthorizationServerClientsProperties.Client client) {
+
+    var registration = client.getRegistration();
+    var clientSettingsProps = client.getSettings().getClient();
+
+    ClientSettings clientSettings =
+        ClientSettings.builder().requireProofKey(clientSettingsProps.isRequireProofKey()).build();
+
+    RegisteredClient.Builder builder =
+        RegisteredClient.withId(UUID.randomUUID().toString())
+            .clientId(registration.getClientId())
+            .clientSecret(registration.getClientSecret())
+            .clientSettings(clientSettings);
+
+    registration
+        .getClientAuthenticationMethods()
+        .forEach(m -> builder.clientAuthenticationMethod(new ClientAuthenticationMethod(m)));
+
+    registration
+        .getAuthorizationGrantTypes()
+        .forEach(g -> builder.authorizationGrantType(new AuthorizationGrantType(g)));
+
+    registration.getRedirectUris().forEach(builder::redirectUri);
+
+    registration.getPostLogoutRedirectUris().forEach(builder::postLogoutRedirectUri);
+
+    registration.getScopes().forEach(builder::scope);
+
+    return builder.build();
   }
 
   @Bean
@@ -251,83 +274,6 @@ public class OidcServerConfig {
   }
 
   @Bean
-  @Profile("!test")
-  RegisteredClientRepository registeredClientRepository(PasswordEncoder encoder) {
-    log.debug("####### using non-test client repo");
-    RegisteredClient claimFrontEndClient =
-        buildRegisteredClient(
-            "caa-client",
-            "mock-secret",
-            encoder,
-            AuthorizationGrantType.AUTHORIZATION_CODE,
-            cfeRedirect,
-            List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            false,
-            cfeLogout);
-
-    RegisteredClient assessFrontEndClient =
-        buildRegisteredClient(
-            "afe-client",
-            "mock-secret",
-            encoder,
-            AuthorizationGrantType.AUTHORIZATION_CODE,
-            afeRedirect,
-            List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            false,
-            afeLogout);
-
-    RegisteredClient claimsApiClient = getClaimsApiClient(encoder);
-
-    return new InMemoryRegisteredClientRepository(
-        claimFrontEndClient, assessFrontEndClient, claimsApiClient);
-  }
-
-  @Bean
-  @Profile("test")
-  RegisteredClientRepository testRegisteredClientRepository(PasswordEncoder encoder) {
-    log.debug("####### using TEST client repo");
-
-    RegisteredClient claimFrontEndClient =
-        buildRegisteredClient(
-            "caa-client",
-            "mock-secret",
-            encoder,
-            AuthorizationGrantType.AUTHORIZATION_CODE,
-            cfeRedirect,
-            List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            true,
-            cfeLogout);
-
-    RegisteredClient assessFrontEndClient =
-        buildRegisteredClient(
-            "afe-client",
-            "mock-secret",
-            encoder,
-            AuthorizationGrantType.AUTHORIZATION_CODE,
-            afeRedirect,
-            List.of(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, claimsApiScope),
-            true,
-            afeLogout);
-
-    RegisteredClient claimsApiClient = getClaimsApiClient(encoder);
-
-    return new InMemoryRegisteredClientRepository(
-        claimFrontEndClient, assessFrontEndClient, claimsApiClient);
-  }
-
-  private RegisteredClient getClaimsApiClient(PasswordEncoder encoder) {
-    return RegisteredClient.withId(UUID.randomUUID().toString())
-        .clientId("https://claims-api")
-        .clientSecret(encoder.encode("mock-secret"))
-        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
-        .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-        .authorizationGrantType(
-            new AuthorizationGrantType("urn:ietf:params:oauth:grant-type:jwt-bearer"))
-        .scope("https://downstream-api/data_read")
-        .build();
-  }
-
-  @Bean
   AuthorizationServerSettings authorizationServerSettings() {
     return AuthorizationServerSettings.builder().issuer(issuer).build();
   }
@@ -419,54 +365,12 @@ public class OidcServerConfig {
 
   @Bean
   PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
   }
 
   @Bean
   JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
     return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
-  }
-
-  private RegisteredClient buildRegisteredClient(
-      String clientId,
-      String secret,
-      PasswordEncoder encoder,
-      AuthorizationGrantType grantType,
-      String redirectUri,
-      List<String> scopes,
-      boolean disablePkceInTest,
-      String logoutUri) {
-
-    ClientSettings clientSettings =
-        ClientSettings.builder()
-            .requireProofKey(
-                grantType == AuthorizationGrantType.AUTHORIZATION_CODE && !disablePkceInTest)
-            .build();
-    RegisteredClient.Builder builder =
-        RegisteredClient.withId(UUID.randomUUID().toString())
-            .clientId(clientId)
-            .clientSecret(encoder.encode(secret))
-            .clientAuthenticationMethod(
-                grantType == AuthorizationGrantType.CLIENT_CREDENTIALS
-                    ? ClientAuthenticationMethod.CLIENT_SECRET_BASIC
-                    : ClientAuthenticationMethod.CLIENT_SECRET_POST)
-            .authorizationGrantType(grantType)
-            .postLogoutRedirectUri(logoutUri)
-            .clientSettings(clientSettings);
-
-    if (grantType == AuthorizationGrantType.AUTHORIZATION_CODE) {
-      builder
-          .authorizationGrantType(
-              AuthorizationGrantType.AUTHORIZATION_CODE) // ensure code grant stays
-          .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-          .redirectUri(redirectUri);
-      scopes.forEach(builder::scope);
-    } else if (grantType == AuthorizationGrantType.CLIENT_CREDENTIALS) {
-      scopes.forEach(builder::scope);
-    }
-    RegisteredClient client = builder.build();
-    log.debug("AuthorizationGrantTypes: {}", client.getAuthorizationGrantTypes());
-    return client;
   }
 
   private AuthenticationProvider jwtBearerAuthenticationProvider(

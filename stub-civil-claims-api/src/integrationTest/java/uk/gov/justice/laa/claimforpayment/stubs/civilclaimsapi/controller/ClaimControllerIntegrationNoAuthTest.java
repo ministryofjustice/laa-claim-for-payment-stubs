@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubApplication;
@@ -21,10 +24,11 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubAp
 @SpringBootTest(classes = CivilClaimsStubApplication.class, properties = "security.enabled=false")
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 class ClaimControllerIntegrationNoAuthTest {
 
   @Autowired private MockMvc mockMvc;
-  
+  @MockitoBean private JwtDecoder jwtDecoder;
 
   @Test
   void shouldGetAllClaimsForUser() throws Exception {

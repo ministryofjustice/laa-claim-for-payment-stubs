@@ -44,7 +44,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
@@ -150,14 +149,12 @@ public class OidcServerConfigTest {
           mockMvc
               .perform(
                   post("/oauth2/token")
-                      .contentType(
-                          org.springframework.http.MediaType
-                              .APPLICATION_FORM_URLENCODED) 
+                      .contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
                       .param("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-                      .param("assertion", accessToken) 
-                      .param("client_id", "https://claims-api") 
+                      .param("assertion", accessToken)
+                      .param("client_id", "https://claims-api")
                       .param("client_secret", "api-mock-secret")
-                      .param("scope", "https://downstream-api/data_read")
+                      .param("scope", "https://civil-claims-api/data_read")
                       .param("requested_token_use", "on_behalf_of"))
               .andExpect(status().isOk())
               .andDo(print())
@@ -168,10 +165,49 @@ public class OidcServerConfigTest {
 
       Jwt decodedJwt = jwtDecoder.decode(downstreamToken);
 
-
       assertThat(decodedJwt.getSubject()).isEqualTo("alice"); // Identity is preserved
       assertThat(decodedJwt.getAudience())
-          .contains("https://downstream-api"); // Audience has shifted
+          .contains("https://civil-claims-api"); // Audience has shifted
+    }
+
+    @Test
+    @DisplayName(
+        "Claims API client can't exchange access token for random downstream access token"
+            + " scopes")
+    void apiClientCantExchangeTokenForRandomDownstreamToken() throws Exception {
+      RegisteredClient client = registeredClientRepository.findByClientId("caa-client");
+      String apiScope = "https://claims-api/claims_write";
+      String code = authenticateAndReturnCode(client, apiScope);
+      MvcResult result =
+          mockMvc
+              .perform(
+                  post("/oauth2/token")
+                      .param("grant_type", "authorization_code")
+                      .param("code", code)
+                      .param("client_id", "caa-client")
+                      .param("client_secret", "caa-mock-secret")
+                      .param("scope", apiScope)
+                      .param("redirect_uri", "http://localhost:3000/callback"))
+              .andExpect(jsonPath("$.access_token").exists())
+              .andExpect(status().isOk())
+              .andReturn();
+
+      String responseBody = result.getResponse().getContentAsString();
+      String accessToken = JsonPath.read(responseBody, "$.access_token");
+
+      mockMvc
+          .perform(
+              post("/oauth2/token")
+                  .contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
+                  .param("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                  .param("assertion", accessToken)
+                  .param("client_id", "https://claims-api")
+                  .param("client_secret", "api-mock-secret")
+                  .param("scope", "https://downstream-api/data_read")
+                  .param("requested_token_use", "on_behalf_of"))
+          .andExpect(status().isBadRequest())
+          .andDo(print())
+          .andReturn();
     }
 
     private String authenticateAndReturnCode(RegisteredClient client, String apiScope)

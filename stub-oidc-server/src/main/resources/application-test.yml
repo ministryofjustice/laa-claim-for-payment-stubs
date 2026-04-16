@@ -24,21 +24,18 @@ spring:
             settings:
               client:
                 require-proof-key: false 
-                redirect-uris: ["http://localhost:3000/callback"]
-                post-logout-redirect-uris: ["http://localhost:3000"]
+            registration:    
+              redirect-uris: ["http://localhost:3000/callback"]
+              post-logout-redirect-uris: ["http://localhost:3000"]
           afe-client:
             settings:
               client:
                 require-proof-key: false
-                redirect-uris: ["http://localhost:3001/callback"]
-                post-logout-redirect-uris: ["http://localhost:3001"]   
-
-
+            registration:  
+              redirect-uris: ["http://localhost:3001/callback"]
+              post-logout-redirect-uris: ["http://localhost:3001"]   
 
 auth:
   mock:
-    redirect-cfe: http://localhost:3000/callback
     issuer: http://localhost:8091
-    logout-cfe: http://localhost:3000
-    redirect-afe: http://localhost:3001/callback
-    logout-afe: http://localhost:3001
+

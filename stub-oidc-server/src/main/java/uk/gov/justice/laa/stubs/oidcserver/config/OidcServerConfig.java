@@ -10,6 +10,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -192,9 +193,7 @@ public class OidcServerConfig {
                     0,
                     request -> {
                       String grantType = request.getParameter("grant_type");
-                      String tokenUse = request.getParameter("requested_token_use");
-                      if (!"urn:ietf:params:oauth:grant-type:jwt-bearer".equals(grantType)
-                          || !"on_behalf_of".equals(tokenUse)) {
+                      if (!"urn:ietf:params:oauth:grant-type:jwt-bearer".equals(grantType)) {
                         return null;
                       }
 
@@ -234,24 +233,36 @@ public class OidcServerConfig {
         .apply(authorizationServerConfigurer);
 
     // Customize OIDC userinfo endpoint mapping inside the authorizationServerConfigurer
-    authorizationServerConfigurer.oidc(
-        oidc ->
-            oidc.userInfoEndpoint(
-                userInfo ->
-                    userInfo.userInfoMapper(
-                        ctx -> {
-                          String sub = ctx.getAuthorization().getPrincipalName();
-                          TestUser user = profiles.get(sub);
-                          Map<String, Object> claims = new HashMap<>();
-                          claims.put("sub", sub);
-                          if (user != null) {
-                            claims.put("name", user.displayName());
-                            claims.put("preferred_username", user.username());
-                            claims.put("email", user.email());
-                            claims.put("FIRM_CODE", user.firmId());
-                          }
-                          return new OidcUserInfo(claims);
-                        })));
+    authorizationServerConfigurer
+        .oidc(
+            oidc ->
+                oidc.userInfoEndpoint(
+                        userInfo ->
+                            userInfo.userInfoMapper(
+                                ctx -> {
+                                  String sub = ctx.getAuthorization().getPrincipalName();
+                                  TestUser user = profiles.get(sub);
+                                  Map<String, Object> claims = new HashMap<>();
+                                  claims.put("sub", sub);
+                                  if (user != null) {
+                                    claims.put("name", user.displayName());
+                                    claims.put("preferred_username", user.username());
+                                    claims.put("email", user.email());
+                                    claims.put("FIRM_CODE", user.firmId());
+                                  }
+                                  return new OidcUserInfo(claims);
+                                }))
+                    .providerConfigurationEndpoint(
+                        provider ->
+                            provider.providerConfigurationCustomizer(
+                                customizer ->
+                                    customizer.grantType(
+                                        "urn:ietf:params:oauth:grant-type:jwt-bearer"))))
+        .authorizationServerMetadataEndpoint(
+            metadata ->
+                metadata.authorizationServerMetadataCustomizer(
+                    customizer ->
+                        customizer.grantType("urn:ietf:params:oauth:grant-type:jwt-bearer")));
 
     return http.build();
   }
@@ -387,6 +398,25 @@ public class OidcServerConfig {
         RegisteredClient client =
             ((OAuth2ClientAuthenticationToken) jwtGrant.getPrincipal()).getRegisteredClient();
 
+        Set<String> requestedScopes = jwtGrant.getScopes();
+        Set<String> allowedScopes = client.getScopes();
+
+        Set<String> authorizedScopes = new HashSet<>();
+        if (requestedScopes.isEmpty()) {
+          authorizedScopes = allowedScopes;
+        } else {
+          for (String requestedScope : requestedScopes) {
+            if (!allowedScopes.contains(requestedScope)) {
+              throw new OAuth2AuthenticationException(
+                  new OAuth2Error(
+                      OAuth2ErrorCodes.INVALID_SCOPE,
+                      "The requested scope is not allowed for this client: " + requestedScope,
+                      null));
+            }
+            authorizedScopes.add(requestedScope);
+          }
+        }
+
         Object assertionObj = jwtGrant.getAdditionalParameters().get("assertion");
         String assertionValue = String.valueOf(assertionObj);
 
@@ -409,7 +439,7 @@ public class OidcServerConfig {
             OAuth2Authorization.withRegisteredClient(client)
                 .principalName(userSubject)
                 .authorizationGrantType(jwtGrant.getGrantType())
-                .authorizedScopes(jwtGrant.getScopes())
+                .authorizedScopes(authorizedScopes)
                 .build();
 
         var contextBuilder =
@@ -430,7 +460,6 @@ public class OidcServerConfig {
         }
 
         Jwt jwt = (Jwt) generatedToken;
-        Set<String> authorizedScopes = jwtGrant.getScopes();
         OAuth2AccessToken accessToken =
             new OAuth2AccessToken(
                 OAuth2AccessToken.TokenType.BEARER,

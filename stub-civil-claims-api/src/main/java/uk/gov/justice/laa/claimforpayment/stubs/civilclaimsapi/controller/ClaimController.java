@@ -85,9 +85,7 @@ public class ClaimController {
 
     Long claimId = claimService.createClaim(requestBody, providerUserId);
     URI location = URI.create("/api/v1/claims/" + claimId);
-    return ResponseEntity
-    .created(location)
-    .body(new CreateClaimResponse(claimId));
+    return ResponseEntity.created(location).body(new CreateClaimResponse(claimId));
   }
 
   /**
@@ -103,7 +101,8 @@ public class ClaimController {
             description = "Paged list of claims linked to a provider user",
             content = @Content(schema = @Schema(implementation = ClaimPageResponse.class)))
       })
-  @PreAuthorize("hasAuthority('SCOPE_Claims.Write')")
+  @PreAuthorize(
+      "hasAuthority('SCOPE_' + @environment.getProperty('app.security.authorities.claims-write'))")
   @GetMapping
   public ResponseEntity<ClaimPageResponse> getClaims(
       @RequestParam(defaultValue = "0") int page,

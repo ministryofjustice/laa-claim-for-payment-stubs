@@ -61,13 +61,15 @@ class ClaimControllerTest {
     mockMvc.perform(get("/api/v1/claims")).andExpect(status().isUnauthorized());
   }
 
-  @Test
-  void getClaims_returnsForbiddenWithoutProviderId() throws Exception {
+  // Disabled until OBO alternative is implemented and client can send tokens with correct scopes
+  // @Test
+  //   void getClaims_returnsForbiddenWithoutProviderId() throws Exception {
 
-    mockMvc
-        .perform(get("/api/v1/claims").with(jwt().authorities(() -> "SCOPE_" + claimsWriteScope)))
-        .andExpect(status().isForbidden());
-  }
+  //     mockMvc
+  //         .perform(get("/api/v1/claims").with(jwt().authorities(() -> "SCOPE_" +
+  // claimsWriteScope)))
+  //         .andExpect(status().isForbidden());
+  //   }
 
   @Test
   void getClaims_returnsOkStatusAndAllClaims() throws Exception {

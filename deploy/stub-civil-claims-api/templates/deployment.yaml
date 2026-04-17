@@ -109,6 +109,16 @@ spec:
                 secretKeyRef:
                   name: {{ required "postgres.secretName is required when postgres.enabled=true" .Values.postgres.secretName }}
                   key: database_password
+            - name: ISSUER_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.env.ISSUER_BASE_URL.name }}
+                  key: {{ .Values.env.ISSUER_BASE_URL.key }}
+            - name: AUDIENCE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.env.AUDIENCE.name }}
+                  key: {{ .Values.env.AUDIENCE.key }}
             - name: DB_SSLMODE
               value: {{ .Values.postgres.sslmode | default "require" | quote }}
 

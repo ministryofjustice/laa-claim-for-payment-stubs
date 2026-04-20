@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubApplication;
@@ -23,10 +26,12 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubAp
 @SpringBootTest(classes = CivilClaimsStubApplication.class, properties = "security.enabled=true")
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 class ClaimControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   private UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+  @MockitoBean private JwtDecoder jwtDecoder;
 
   @Test
   void shouldGetAllClaimsForUser() throws Exception {
@@ -50,7 +55,7 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_Claims.Write")))
+                        .authorities(() -> "SCOPE_https://claims-api/claims_write")))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value(1))
@@ -85,7 +90,7 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_Claims.Write")))
+                        .authorities(() -> "SCOPE_https://claims-api/claims_write")))
         .andExpect(status().isCreated());
   }
 
@@ -112,7 +117,7 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_Claims.Write")))
+                        .authorities(() -> "SCOPE_https://claims-api/claims_write")))
         .andExpect(status().isNoContent());
   }
 
@@ -124,7 +129,7 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_Claims.Write")))
+                        .authorities(() -> "SCOPE_https://claims-api/claims_write")))
         .andExpect(status().isNoContent());
   }
 }

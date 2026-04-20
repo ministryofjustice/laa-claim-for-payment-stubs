@@ -6,10 +6,6 @@ auth:
     redirect-ssr: http://localhost:8080/login/oauth2/code/ssr
     logout-ssr: http://localhost:3000
 
-spring:
-  config:
-    import: classpath:config/external.yml
-
     # used by actuator info endpoint
 info:
   app:
@@ -37,3 +33,40 @@ management:
 
 stub-oidc-server:
   client-secret: mock-secret
+
+spring:
+  config:
+    import: classpath:config/external.yml
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          caa-client:
+            registration:
+              client-id: "caa-client"
+              client-secret: "{noop}caa-mock-secret"
+              client-authentication-methods: ["client_secret_post"]
+              authorization-grant-types: ["authorization_code", "refresh_token"]
+              scopes: ["openid", "profile", "email", "https://claims-api/claims_write"]
+            settings:
+              client:
+                require-proof-key: true # PKCE enabled for Prod/Local
+          afe-client:
+            registration:
+              client-id: "afe-client"
+              client-secret: "{noop}afe-mock-secret"
+              client-authentication-methods: ["client_secret_post"]
+              authorization-grant-types: ["authorization_code", "refresh_token"]
+              scopes: ["openid", "profile", "email", "https://claims-api/claims_write"]
+            settings:
+              client:
+                require-proof-key: true
+          claims-api:
+            registration:
+              client-id: "https://claims-api"
+              client-secret: "{noop}api-mock-secret"
+              client-authentication-methods: ["client_secret_post"]
+              authorization-grant-types: 
+                - "client_credentials"
+                - "urn:ietf:params:oauth:grant-type:jwt-bearer" # OBO Support
+              scopes: ["https://civil-claims-api/data_read"]

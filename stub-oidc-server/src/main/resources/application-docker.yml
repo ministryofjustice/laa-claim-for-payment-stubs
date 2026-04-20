@@ -3,14 +3,24 @@ logging:
     root: DEBUG
     org.springframework.security.oauth2.server.authorization.authentication: TRACE
 
-auth:
-  mock:
-    issuer: http://stub-oidc-server:8091
-    redirect-cfe: http://localhost:3000/callback
-    logout-cfe: http://localhost:3000
-    redirect-afe: http://localhost:3001/callback
-    logout-afe: http://localhost:3001
-
 spring:
   config:
     import: file:/opt/stub-oidc-server/config/external.yml
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          caa-client:
+            registration:    
+              redirect-uris: ["http://localhost:3000/callback"]
+              post-logout-redirect-uris: ["http://localhost:3000"]
+          afe-client:
+            registration:  
+              redirect-uris: ["http://localhost:3001/callback"]
+              post-logout-redirect-uris: ["http://localhost:3001"]   
+
+auth:
+  mock:
+    issuer: http://stub-oidc-server:8091
+
+  

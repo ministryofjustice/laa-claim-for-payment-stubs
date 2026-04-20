@@ -59,3 +59,8 @@ management:
       enabled: true
 
 logging.level.root: INFO
+
+app:
+  security:
+    authorities:
+      claims-write: Claims.Write

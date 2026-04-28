@@ -121,6 +121,13 @@ spec:
                   key: {{ .Values.env.AUDIENCE.key }}
             - name: DB_SSLMODE
               value: {{ .Values.postgres.sslmode | default "require" | quote }}
+            - name: ALLOWED_AUDIENCES
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.env.ALLOWED_AUDIENCES.name }}
+                  key: {{ .Values.env.ALLOWED_AUDIENCES.key }}
+            - name: DB_SSLMODE
+              value: {{ .Values.postgres.sslmode | default "require" | quote }}
 
       {{- with .Values.volumes }}
       volumes:

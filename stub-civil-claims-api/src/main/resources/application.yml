@@ -62,5 +62,7 @@ logging.level.root: INFO
 
 app:
   security:
+    jwks-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/../discovery/v2.0/keys
+    allowed-audiences: ${ALLOWED_AUDIENCES:https://claims-api}
     authorities:
       claims-write: Claims.Write

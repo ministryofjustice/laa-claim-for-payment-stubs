@@ -30,27 +30,27 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.config.TestJwtConfig;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.security.SecurityConfig;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.security.XAuthSecurityConfig;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service.DatabaseBasedClaimService;
 
 @WebMvcTest(controllers = ClaimController.class)
-@Import({SecurityConfig.class})
-@TestPropertySource(properties = "security.enabled=true")
 @ActiveProfiles("test")
+@Import({SecurityConfig.class, TestJwtConfig.class, XAuthSecurityConfig.class})
+@TestPropertySource(properties = "security.enabled=true")
 class ClaimControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
   @MockitoBean private DatabaseBasedClaimService mockClaimService;
-
-  @MockitoBean private JwtDecoder jwtDecoder;
 
   @Value("${app.security.authorities.claims-write}")
   private String claimsWriteScope;
@@ -58,18 +58,16 @@ class ClaimControllerTest {
   @Test
   void getClaims_returnsNotAuthorisedWithoutReadScope() throws Exception {
 
-    mockMvc.perform(get("/api/v1/claims")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/v1/claims").with(jwt())).andExpect(status().isForbidden());
   }
 
-  // Disabled until OBO alternative is implemented and client can send tokens with correct scopes
-  // @Test
-  //   void getClaims_returnsForbiddenWithoutProviderId() throws Exception {
+  @Test
+  void getClaims_returnsForbiddenWithoutProviderId() throws Exception {
 
-  //     mockMvc
-  //         .perform(get("/api/v1/claims").with(jwt().authorities(() -> "SCOPE_" +
-  // claimsWriteScope)))
-  //         .andExpect(status().isForbidden());
-  //   }
+    mockMvc
+        .perform(get("/api/v1/claims").with(jwt().authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isForbidden());
+  }
 
   @Test
   void getClaims_returnsOkStatusAndAllClaims() throws Exception {
@@ -120,6 +118,7 @@ class ClaimControllerTest {
   }
 
   @Test
+  @WithMockUser(authorities = "SCOPE_claims-write")
   void getClaimById_returnsOkStatusAndOneClaim() throws Exception {
     UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 

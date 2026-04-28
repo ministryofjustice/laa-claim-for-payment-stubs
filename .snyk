@@ -7,4 +7,9 @@ ignore:
         reason: requires spring upgrade ny availalbe
         expires: 2026-06-01T00:00:00.000Z
         created: 2026-03-03T09:16:35.779Z
+  SNYK-JAVA-ORGAPACHECOMMONS-10734078:
+    - '*':
+        reason: this is a doxia dependency waiting for checkstyle to merge, not used at runtime
+        expires: 2026-08-01T00:00:00.000Z
+        created: 2026-04-27T09:16:35.779Z
 patch: {}

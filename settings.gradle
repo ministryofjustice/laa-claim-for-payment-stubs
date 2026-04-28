@@ -13,7 +13,7 @@ pluginManagement {
     }
 
     plugins {
-        id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '2.2.3' apply false
+        id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '2.2.6' apply false
         id 'org.openapi.generator' version '7.18.0'
         id 'io.freefair.lombok' version '9.2.0'
     }
@@ -23,4 +23,5 @@ rootProject.name = 'laa-claim-for-payment-stubs'
 
 include 'stub-civil-claims-api'
 include 'stub-oidc-server'
+include 'authx-secondary'
 // include 'spring-boot-microservice-service'

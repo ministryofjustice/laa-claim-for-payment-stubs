@@ -1,0 +1,71 @@
+
+plugins {
+    id 'java-library'
+    id 'jacoco'
+    id 'checkstyle'
+    id "io.freefair.lombok" version "9.2.0"
+}
+
+group = 'uk.gov.justice.laa.claimforpayment.authx'
+
+checkstyle {
+    toolVersion = "12.1.1"
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+        testLogging {
+        events "passed", "skipped", "failed", "standard_out", "standard_error"
+        showStandardStreams = true
+    }
+}
+
+jacocoTestReport {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it)
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it)
+        }))
+    }
+}
+
+dependencies {
+
+    
+    api platform("org.springframework.security:spring-security-bom:7.0.5")
+    api platform("org.springframework:spring-framework-bom:7.0.7")
+
+    api "org.springframework.security:spring-security-core"
+    api "org.springframework.security:spring-security-oauth2-jose"
+    api "org.springframework.security:spring-security-oauth2-resource-server"
+
+    compileOnly "org.springframework:spring-web"
+    implementation "jakarta.servlet:jakarta.servlet-api:6.1.0"
+    compileOnly 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'org.json:json:20251224'
+
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "org.springframework:spring-test"
+
+    testImplementation "com.nimbusds:nimbus-jose-jwt"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:6.0.3"
+    testImplementation "org.mockito:mockito-core:5.23.0"
+    testImplementation "org.assertj:assertj-core:3.27.7"
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.4.14'
+}

@@ -1,15 +1,17 @@
 package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.security;
 
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -46,7 +48,10 @@ public class SecurityConfig {
 
   @Order(1)
   @Bean
-  SecurityFilterChain http(HttpSecurity http, ObjectProvider<JwtDecoder> jwtDecoderProvider)
+  SecurityFilterChain http(
+      HttpSecurity http,
+      @Qualifier("accessToken") JwtDecoder accessTokenJwtDecoder,
+      Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter)
       throws Exception {
     log.info("USING REAL SECURITY CONFIG");
     http.authorizeHttpRequests(
@@ -64,13 +69,13 @@ public class SecurityConfig {
                     .authenticated())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()))
+        .oauth2ResourceServer(
+            o ->
+                o.jwt(
+                    jwt ->
+                        jwt.decoder(accessTokenJwtDecoder)
+                            .jwtAuthenticationConverter(jwtAuthenticationConverter)))
         .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
-
-    // Only enable resource-server JWT if a JwtDecoder exists
-    if (jwtDecoderProvider.getIfAvailable() != null) {
-      http.oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
-    }
 
     return http.build();
   }

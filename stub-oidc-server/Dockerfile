@@ -1,8 +1,5 @@
 FROM amazoncorretto:25-alpine
 
-RUN apk update \
- && apk upgrade --no-cache \
- && rm -rf /var/cache/apk/*
 
 RUN mkdir -p /opt/stub-oidc-server/
 WORKDIR /opt/stub-oidc-server/

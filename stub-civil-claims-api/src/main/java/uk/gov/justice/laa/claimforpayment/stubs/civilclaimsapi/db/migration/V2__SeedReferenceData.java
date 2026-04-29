@@ -31,6 +31,14 @@ public class V2__SeedReferenceData extends BaseJavaMigration {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     mapper.registerModule(new JavaTimeModule());
 
+    String externalPath = System.getenv("CLAIMS_SEED_FILE");
+
+    if (externalPath != null && !externalPath.isBlank()) {
+      try (InputStream is = java.nio.file.Files.newInputStream(java.nio.file.Path.of(externalPath))) {
+        return mapper.readValue(is, ClaimsFile.class);
+      }
+    }
+
     try (InputStream is =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_PATH)) {
 

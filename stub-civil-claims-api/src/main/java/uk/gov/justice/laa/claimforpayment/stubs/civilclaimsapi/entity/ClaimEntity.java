@@ -34,15 +34,15 @@ public class ClaimEntity {
 
   private LocalDate concluded;
 
-  @Column(name = "providerUserId")
+  @Column(name = "provider_user_id")
   private UUID providerUserId;
 
-  @Column(name = "feeType")
+  @Column(name = "fee_type")
   private String feeType;
 
   @Column(name = "claimed", nullable = false, precision = 10, scale = 2)
   private BigDecimal claimed;
 
-  @Column(name = "submissionId")
+  @Column(name = "submission_id")
   private UUID submissionId;
 }

@@ -1,7 +1,19 @@
 package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.config;
 
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.repository.ClaimRepository;
+
+/** Load claims into database at runtime. */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ClaimsLoader implements ApplicationRunner {
 
   private final ClaimsConfig claimsConfig;
@@ -17,18 +29,18 @@ public class ClaimsLoader implements ApplicationRunner {
     repository.saveAll(claims);
 
     log.info("Loaded {} claims from config", repository.count());
-}
+  }
 
-private ClaimEntity toEntity(ConfigClaim claim) {
-  return ClaimEntity.builder()
-  .id(claim.id())
-  .provider_user_id(claim.provider_user_id())
-  .ufn(claim.ufn())
-  .client(claim.client())
-  .category(claim.category())
-  .concluded(claim.concluded())
-  .fee_type(claim.fee_type())
-  .claimed(claim.claimed())
-  .submission_id(claim.submission_id())
-  .build();
+  private ClaimEntity toEntity(Claim claim) {
+    return ClaimEntity.builder()
+        .providerUserId(claim.getProviderUserId())
+        .ufn(claim.getUfn())
+        .client(claim.getClient())
+        .category(claim.getCategory())
+        .concluded(claim.getConcluded())
+        .feeType(claim.getFeeType())
+        .claimed(claim.getClaimed())
+        .submissionId(claim.getSubmissionId())
+        .build();
+  }
 }

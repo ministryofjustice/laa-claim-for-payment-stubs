@@ -16,6 +16,8 @@ spring:
         jwt:
           issuer-uri: http://localhost:8081
   flyway.locations: classpath:db/migration,classpath:db/local
+  config:
+    import: optional:classpath:config/claims.yml
 
 app:
   security:

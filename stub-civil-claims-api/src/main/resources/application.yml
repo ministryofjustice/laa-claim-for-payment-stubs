@@ -20,7 +20,9 @@ spring:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations:
+      - classpath:db/migration
+      - classpath:uk/gov/justice/laa/claimforpayment/stubs/civilclaimsapi/db/migration
 
   profiles:
     # Profile groups let you turn on multiple profiles with one name

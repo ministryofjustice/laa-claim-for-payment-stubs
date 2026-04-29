@@ -21,10 +21,4 @@ spring:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       # Ensure Hibernate prefers native UUID mapping (not BINARY(16))
       hibernate.type.preferred_uuid_jdbc_type: UUID
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-
-
-
     

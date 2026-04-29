@@ -1,6 +1,5 @@
 FROM amazoncorretto:25-alpine
 
-
 RUN mkdir -p /opt/stub-oidc-server/
 WORKDIR /opt/stub-oidc-server/
 

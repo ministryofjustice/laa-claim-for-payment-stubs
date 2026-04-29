@@ -13,5 +13,5 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.TestClaim;
 @Getter
 @Setter
 public class ExternalConfig {
-    private List<TestClaim> claims;
+    private List<configClaim> claims = List.of();
 }

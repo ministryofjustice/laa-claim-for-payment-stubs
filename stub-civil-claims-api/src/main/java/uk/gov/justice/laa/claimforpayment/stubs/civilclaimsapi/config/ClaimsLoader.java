@@ -20,5 +20,15 @@ public class ClaimsLoader implements ApplicationRunner {
 }
 
 private ClaimEntity toEntity(ConfigClaim claim) {
-  return ClaimEntity.builder().id(claim.id()).providerUserId
+  return ClaimEntity.builder()
+  .id(claim.id())
+  .provider_user_id(claim.provider_user_id())
+  .ufn(claim.ufn())
+  .client(claim.client())
+  .category(claim.category())
+  .concluded(claim.concluded())
+  .fee_type(claim.fee_type())
+  .claimed(claim.claimed())
+  .submission_id(claim.submission_id())
+  .build();
 }

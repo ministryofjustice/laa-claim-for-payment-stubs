@@ -87,6 +87,9 @@ env:
   AUDIENCE:
     name: auth-secret-staging
     key: application-id 
+  ALLOWED_AUDIENCES:
+    name: auth-secret-staging
+    key: allowed-audiences
 
   
 springProfilesActive: "staging"

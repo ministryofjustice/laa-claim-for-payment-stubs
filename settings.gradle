@@ -23,4 +23,5 @@ rootProject.name = 'laa-claim-for-payment-stubs'
 
 include 'stub-civil-claims-api'
 include 'stub-oidc-server'
+include 'authx-secondary'
 // include 'spring-boot-microservice-service'

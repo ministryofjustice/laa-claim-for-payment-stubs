@@ -100,6 +100,9 @@ env:
   AUDIENCE:
     name: auth-secret-uat
     key: application-id 
+  ALLOWED_AUDIENCES:
+    name: auth-secret-uat
+    key: allowed-audiences
 
   
 

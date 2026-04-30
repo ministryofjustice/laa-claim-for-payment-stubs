@@ -8,3 +8,4 @@ spring:
         jwt:
           issuer-uri: ${ISSUER_BASE_URL:"https://laa-claim-for-payment-stub-oidc-server-uat.cloud-platform.service.justice.gov.uk"}
           audience: ${AUDIENCE:api-audience}
+          

@@ -111,10 +111,8 @@ public class ClaimController {
       @AuthenticationPrincipal Jwt jwt) {
 
     String id = jwt.getClaimAsString("USER_NAME");
-    if (id == null || id.isBlank()) {
-      id = "123e4567-e89b-12d3-a456-426614174000";
-      log.debug("Setting provider user id to default value as doesn't exist in context TODO");
-      // throw new ResponseStatusException(FORBIDDEN, "providerUserId missing in token");
+    if (id == null || id.isBlank()) {  
+      throw new ResponseStatusException(FORBIDDEN, "providerUserId missing in token");
     }
     UUID providerUserId = UUID.fromString(id);
     log.debug("Fetching all claims for provider user " + providerUserId);

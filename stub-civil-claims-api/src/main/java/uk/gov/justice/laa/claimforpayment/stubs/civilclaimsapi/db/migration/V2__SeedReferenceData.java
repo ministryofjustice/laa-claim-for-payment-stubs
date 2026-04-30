@@ -32,20 +32,15 @@ public class V2__SeedReferenceData extends BaseJavaMigration {
     mapper.registerModule(new JavaTimeModule());
 
     String externalPath = System.getenv("CLAIMS_SEED_FILE");
+    InputStream is;
 
     if (externalPath != null && !externalPath.isBlank()) {
-      try (InputStream is = java.nio.file.Files.newInputStream(java.nio.file.Path.of(externalPath))) {
-        return mapper.readValue(is, ClaimsFile.class);
-      }
+      is = java.nio.file.Files.newInputStream(java.nio.file.Path.of(externalPath));
+    } else {
+      is = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_PATH);
     }
 
-    try (InputStream is =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_PATH)) {
-
-      if (is == null) {
-        throw new IllegalStateException("Could not find " + FILE_PATH);
-      }
-
+    try (is) {
       return mapper.readValue(is, ClaimsFile.class);
     }
   }

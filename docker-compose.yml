@@ -9,6 +9,8 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8080
+    volumes:
+      - ./stub-civil-claims-api/src/main/resources/db/data/claims.yaml:ro
   stub-oidc-server:
     build:
       context: ./stub-oidc-server

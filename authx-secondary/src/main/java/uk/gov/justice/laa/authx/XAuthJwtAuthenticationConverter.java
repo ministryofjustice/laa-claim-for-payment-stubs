@@ -75,7 +75,7 @@ public class XAuthJwtAuthenticationConverter
       return base;
     }
 
-    if (jwt.getClaimAsString("oid") != extraClaims.get("oid")) {
+    if (!jwt.getClaimAsString("oid").equals(extraClaims.get("oid"))) {
       log.debug(
           "OID claim in X-Auth does not match OID in access token, skipping X-Auth enrichment");
       return base;

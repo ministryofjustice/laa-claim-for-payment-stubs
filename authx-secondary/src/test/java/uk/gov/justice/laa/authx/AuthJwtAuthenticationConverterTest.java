@@ -58,13 +58,14 @@ public class AuthJwtAuthenticationConverterTest {
   @Test
   void convert_baseJwtClaimsAlwaysTakePrecedence() {
     Jwt baseJwt =
-        TestJwtFactory.jwtWithClaims(Map.of("tenant", "access-token-tenant", "sub", "user-123"));
+        TestJwtFactory.jwtWithClaims(Map.of("tenant", "access-token-tenant", "oid", "user-123"));
 
     Converter<Jwt, AbstractAuthenticationToken> delegate =
         jwt -> new JwtAuthenticationToken(jwt, List.of());
 
     XAuthClaimsExtractor extractor = mock(XAuthClaimsExtractor.class);
-    when(extractor.extractClaims("x-auth-token")).thenReturn(Map.of("tenant", "x-auth-tenant"));
+    when(extractor.extractClaims("x-auth-token"))
+        .thenReturn(Map.of("tenant", "x-auth-tenant", "oid", "user-123"));
 
     JwtAuthenticationToken result =
         (JwtAuthenticationToken)
@@ -93,12 +94,12 @@ public class AuthJwtAuthenticationConverterTest {
     assertThat(result.getToken().getClaims())
         .containsEntry("oid", "base-oid")
         .doesNotContainEntry("oid", "x-auth-oid")
-        .doesNotContainEntry("FIRM_NAME", "SOME_FIRM");  
+        .doesNotContainEntry("FIRM_NAME", "SOME_FIRM");
   }
 
   @Test
   void convert_ignoresDisallowedXAuthClaims() {
-    Jwt baseJwt = TestJwtFactory.jwtWithClaims(Map.of("sub", "user-123"));
+    Jwt baseJwt = TestJwtFactory.jwtWithClaims(Map.of("oid", "user-123"));
 
     Converter<Jwt, AbstractAuthenticationToken> delegate =
         jwt -> new JwtAuthenticationToken(jwt, List.of());
@@ -107,6 +108,7 @@ public class AuthJwtAuthenticationConverterTest {
         Map.of(
             "USER_EMAIL", "user@example.com",
             "aud", "some-audience",
+            "oid", "user-123",
             "FIRM_NAME", "Some Firm");
 
     XAuthClaimsExtractor extractor = mock(XAuthClaimsExtractor.class);
@@ -122,7 +124,7 @@ public class AuthJwtAuthenticationConverterTest {
     assertThat(claims)
         .containsEntry("FIRM_NAME", "Some Firm")
         .containsEntry("USER_EMAIL", "user@example.com")
-        .containsEntry("sub", "user-123") // from base JWT
+        .containsEntry("oid", "user-123") // from base JWT
         .doesNotContainKey("aud");
   }
 }

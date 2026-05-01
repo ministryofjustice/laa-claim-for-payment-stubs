@@ -22,11 +22,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubApplication;
@@ -48,7 +46,6 @@ class ClaimControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   private UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-//   @MockitoBean private JwtDecoder jwtDecoder;
 
   @Autowired private JwtEncoder jwtEncoder;
 
@@ -75,10 +72,7 @@ class ClaimControllerIntegrationTest {
     mockMvc
         .perform(
             get("/api/v1/claims")
-               
- .header(HttpHeaders.AUTHORIZATION,
-                        "Bearer " + accessToken())
-
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken())
                 .header("X-Auth", xAuthTokenWithUserId(providerUserId1.toString())))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -93,7 +87,7 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_"+claimsWriteScope)))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value(1))
@@ -128,7 +122,7 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_"+claimsWriteScope)))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isCreated());
   }
 
@@ -155,7 +149,7 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_"+claimsWriteScope)))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isNoContent());
   }
 
@@ -167,12 +161,12 @@ class ClaimControllerIntegrationTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_"+claimsWriteScope)))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isNoContent());
   }
 
   private String xAuthTokenWithUserId(String userId) {
-    return encode(Map.of("USER_NAME", userId));
+    return encode(Map.of("USER_NAME", userId, "oid", "test-user"));
   }
 
   private String encode(Map<String, Object> claims) {
@@ -189,10 +183,7 @@ class ClaimControllerIntegrationTest {
     return jwtEncoder.encode(JwtEncoderParameters.from(jwtClaims)).getTokenValue();
   }
 
-    private String accessToken() {
-    return encode(
-        Map.of(
-            "sub", "test-user",
-            "scope", claimsWriteScope));
+  private String accessToken() {
+    return encode(Map.of("oid", "test-user", "scope", claimsWriteScope));
   }
 }

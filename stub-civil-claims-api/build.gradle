@@ -60,7 +60,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql:42.7.11'
     implementation "org.flywaydb:flyway-core"
     implementation "org.flywaydb:flyway-database-postgresql"
-
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'

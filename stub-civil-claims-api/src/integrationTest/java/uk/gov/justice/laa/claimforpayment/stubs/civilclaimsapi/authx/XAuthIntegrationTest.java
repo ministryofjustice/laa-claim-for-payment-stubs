@@ -20,8 +20,6 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubAp
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.authx.support.TestAuthController;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.config.TestJwtConfig;
 
-
-
 // src/test/java/.../XAuthIntegrationTest.java
 
 @SpringBootTest(classes = CivilClaimsStubApplication.class, properties = "security.enabled=true")
@@ -32,7 +30,7 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.config.TestJwtCon
   "checkstyle:MethodName"
 })
 @ActiveProfiles("test")
-@Import({ TestAuthController.class, TestJwtConfig.class })
+@Import({TestAuthController.class, TestJwtConfig.class})
 class XAuthIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
@@ -56,12 +54,12 @@ class XAuthIntegrationTest {
   private String accessToken() {
     return encode(
         Map.of(
-            "sub", "test-user",
+            "oid", "test-user",
             "scope", "read"));
   }
 
   private String xAuthTokenWithEnrichedFirm() {
-    return encode(Map.of("FIRM_CODE", "firm1234"));
+    return encode(Map.of("FIRM_CODE", "firm1234", "oid", "test-user"));
   }
 
   private String encode(Map<String, Object> claims) {

@@ -60,7 +60,7 @@ runs:
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
     - name: Authenticate to the cluster
-      uses: ministryofjustice/laa-reusable-github-actions/.github/actions/authenticate_to_cluster@7666443ea3f635ec52544311e0f0ea51830468c0 #main
+      uses: ministryofjustice/laa-reusable-github-actions/.github/actions/authenticate_to_cluster@5ac7a02ecc20f59efc6168bb76cb73aec5be0e2a #main
       with:
         kube-cert: ${{ inputs.kube-cert }}
         kube-token: ${{ inputs.kube-token }}

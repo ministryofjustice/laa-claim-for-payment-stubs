@@ -54,6 +54,7 @@ class ClaimControllerIntegrationNoAuthTest {
         .andExpect(jsonPath("$.category").value("Family"))
         .andExpect(jsonPath("$.concluded").value("2025-03-18"))
         .andExpect(jsonPath("$.feeType").value("Escape"))
+        .andExpect(jsonPath("$.escaped").value(false))
         .andExpect(jsonPath("$.claimed").value(234.56));
   }
 
@@ -67,6 +68,7 @@ class ClaimControllerIntegrationNoAuthTest {
           "category": "Family",
           "concluded": "2025-07-09",
           "feeType": "Hourly",
+          "escaped": false,
           "claimed": 123.45
         }
         """;
@@ -90,6 +92,7 @@ class ClaimControllerIntegrationNoAuthTest {
           "category": "Immigration and Asylum",
           "concluded": "2025-07-10",
           "feeType": "Fixed",
+          "escaped": false,
           "claimed": 999.99
         }
         """;

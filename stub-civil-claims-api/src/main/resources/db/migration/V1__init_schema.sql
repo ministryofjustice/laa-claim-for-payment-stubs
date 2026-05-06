@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS claims (
     category            VARCHAR(50)    NOT NULL,
     concluded           DATE           NOT NULL,
     fee_type            VARCHAR(50)    NOT NULL,
+    escaped             BOOLEAN        NOT NULL      DEFAULT FALSE, 
     claimed             DECIMAL(10, 2) NOT NULL,
     submission_id       UUID,
     provider_user_id    UUID

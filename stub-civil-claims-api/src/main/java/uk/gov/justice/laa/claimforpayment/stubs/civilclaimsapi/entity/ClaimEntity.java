@@ -40,6 +40,9 @@ public class ClaimEntity {
   @Column(name = "fee_type")
   private String feeType;
 
+  @Column(name = "escaped")
+  private Boolean escaped;
+
   @Column(name = "claimed", nullable = false, precision = 10, scale = 2)
   private BigDecimal claimed;
 

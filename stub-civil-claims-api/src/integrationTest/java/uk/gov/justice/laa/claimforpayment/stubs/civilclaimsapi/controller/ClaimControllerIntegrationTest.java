@@ -138,7 +138,7 @@ class ClaimControllerIntegrationTest {
           "category": "Immigration and Asylum",
           "concluded": "2025-07-10",
           "feeType": "Fixed",
-          "escaped": "false,
+          "escaped": false,
           "claimed": 999.99
         }
         """;

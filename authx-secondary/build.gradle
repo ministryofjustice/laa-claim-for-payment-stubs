@@ -3,7 +3,7 @@ plugins {
     id 'java-library'
     id 'jacoco'
     id 'checkstyle'
-    id "io.freefair.lombok" version "9.2.0"
+    id "io.freefair.lombok" version "9.5.0"
 }
 
 group = 'uk.gov.justice.laa.claimforpayment.authx'
@@ -54,7 +54,7 @@ dependencies {
 
     compileOnly "org.springframework:spring-web"
     implementation "jakarta.servlet:jakarta.servlet-api:6.1.0"
-    compileOnly 'org.slf4j:slf4j-api:2.0.9'
+    compileOnly 'org.slf4j:slf4j-api:2.0.17'
     implementation 'org.json:json:20251224'
 
     testImplementation "org.springframework.security:spring-security-test"
@@ -67,5 +67,5 @@ dependencies {
     testImplementation "org.assertj:assertj-core:3.27.7"
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    runtimeOnly 'ch.qos.logback:logback-classic:1.4.14'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.5.32'
 }

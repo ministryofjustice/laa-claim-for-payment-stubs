@@ -58,6 +58,8 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     claimEntity.setCategory(claimRequestBody.getCategory());
     claimEntity.setConcluded(claimRequestBody.getConcluded());
     claimEntity.setFeeType(claimRequestBody.getFeeType());
+    claimEntity.setEscaped(claimRequestBody.getEscaped());
+    claimEntity.setCounselPayment(claimRequestBody.getCounselPayment());
     claimEntity.setClaimed(claimRequestBody.getClaimed());
     claimEntity.setProviderUserId(providerUserId);
     claimEntity.setSubmissionId(claimRequestBody.getSubmissionId());
@@ -80,6 +82,8 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     claimEntity.setCategory(claimRequestBody.getCategory());
     claimEntity.setConcluded(claimRequestBody.getConcluded());
     claimEntity.setFeeType(claimRequestBody.getFeeType());
+    claimEntity.setEscaped(claimRequestBody.getEscaped());
+    claimEntity.setCounselPayment(claimRequestBody.getCounselPayment());
     claimEntity.setClaimed(claimRequestBody.getClaimed());
     claimRepository.save(claimEntity);
   }

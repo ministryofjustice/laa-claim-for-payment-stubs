@@ -4,15 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
-
 
 @ExtendWith(MockitoExtension.class)
 class ClaimMapperTest {
@@ -22,21 +19,26 @@ class ClaimMapperTest {
   private static final String CATEGORY = "A";
   private static final LocalDate CONCLUDED = LocalDate.of(2024, 7, 7);
   private static final String FEE_TYPE = "Standard";
+  private static final Boolean ESCAPED = false;
+  private static final String COUNSEL_PAYMENT = "Paid and Reconciled";
   private static final BigDecimal CLAIMED = new BigDecimal(100.0);
 
   @InjectMocks private ClaimMapper claimMapper = new ClaimMapperImpl();
 
   @Test
   void shouldMapToClaimEntity() {
-    Claim claim = Claim.builder()
-        .id(CLAIM_ID)
-        .ufn(UFN)
-        .client(CLIENT)
-        .category(CATEGORY)
-        .concluded(CONCLUDED)
-        .feeType(FEE_TYPE)
-        .claimed(CLAIMED)
-        .build();
+    Claim claim =
+        Claim.builder()
+            .id(CLAIM_ID)
+            .ufn(UFN)
+            .client(CLIENT)
+            .category(CATEGORY)
+            .concluded(CONCLUDED)
+            .feeType(FEE_TYPE)
+            .escaped(ESCAPED)
+            .counselPayment(COUNSEL_PAYMENT)
+            .claimed(CLAIMED)
+            .build();
 
     ClaimEntity result = claimMapper.toClaimEntity(claim);
 
@@ -47,20 +49,25 @@ class ClaimMapperTest {
     assertThat(result.getCategory()).isEqualTo(CATEGORY);
     assertThat(result.getConcluded()).isEqualTo(CONCLUDED);
     assertThat(result.getFeeType()).isEqualTo(FEE_TYPE);
+    assertThat(result.getEscaped()).isEqualTo(ESCAPED);
+    assertThat(result.getCounselPayment()).isEqualTo(COUNSEL_PAYMENT);
     assertThat(result.getClaimed()).isEqualTo(CLAIMED);
   }
 
   @Test
   void shouldMapToClaim() {
-    ClaimEntity claimEntity = ClaimEntity.builder()
-        .id(CLAIM_ID)
-        .ufn(UFN)
-        .client(CLIENT)
-        .category(CATEGORY)
-        .concluded(CONCLUDED)
-        .feeType(FEE_TYPE)
-        .claimed(CLAIMED)
-        .build();
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(CLAIM_ID)
+            .ufn(UFN)
+            .client(CLIENT)
+            .category(CATEGORY)
+            .concluded(CONCLUDED)
+            .feeType(FEE_TYPE)
+            .escaped(ESCAPED)
+            .counselPayment(COUNSEL_PAYMENT)
+            .claimed(CLAIMED)
+            .build();
 
     Claim result = claimMapper.toClaim(claimEntity);
 
@@ -71,6 +78,8 @@ class ClaimMapperTest {
     assertThat(result.getCategory()).isEqualTo(CATEGORY);
     assertThat(result.getConcluded()).isEqualTo(CONCLUDED);
     assertThat(result.getFeeType()).isEqualTo(FEE_TYPE);
+    assertThat(result.getEscaped()).isEqualTo(ESCAPED);
+    assertThat(result.getCounselPayment()).isEqualTo(COUNSEL_PAYMENT);
     assertThat(result.getClaimed()).isEqualTo(CLAIMED);
   }
 }

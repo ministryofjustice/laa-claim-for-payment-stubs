@@ -84,6 +84,7 @@ class ClaimControllerTest {
                 .concluded(LocalDate.now())
                 .feeType("Fee type 1")
                 .escaped(false)
+                .counselPayment("Paid and Reconciled")
                 .providerUserId(providerUserId1)
                 .build(),
             Claim.builder()
@@ -94,6 +95,7 @@ class ClaimControllerTest {
                 .concluded(LocalDate.now())
                 .feeType("Fee type 2")
                 .escaped(true)
+                .counselPayment("Paid and Reconciled")
                 .providerUserId(providerUserId2)
                 .build());
 
@@ -135,6 +137,7 @@ class ClaimControllerTest {
                 .concluded(LocalDate.now())
                 .feeType("Fee type 1")
                 .escaped(true)
+                .counselPayment("Paid and Reconciled")
                 .build());
 
     mockMvc
@@ -149,6 +152,7 @@ class ClaimControllerTest {
         .andExpect(jsonPath("$.id").value(1))
         .andExpect(jsonPath("$.feeType").value("Fee type 1"))
         .andExpect(jsonPath("$.escaped").value(true))
+        .andExpect(jsonPath("$.counselPayment").value("Paid and Reconciled"))
         .andExpect(jsonPath("$.client").value("Smith"));
   }
 
@@ -168,6 +172,7 @@ class ClaimControllerTest {
           "concluded": "2025-07-07",
           "feeType": "Fee type 1",
           "escaped": false,
+          "counselPayment": "Paid and Reconciled",
           "submissionId": "123e4567-e89b-12d3-a456-426614174000"
         }
         """;
@@ -225,6 +230,7 @@ class ClaimControllerTest {
           "concluded": "2025-07-08",
           "feeType": "Updated Fee Type",
           "escaped": "false",
+          "counselPayment": "Paid and Reconciled",
           "claimed": 1234.56,
           "submissionId": "123e4567-e89b-12d3-a456-426614174001"
         }

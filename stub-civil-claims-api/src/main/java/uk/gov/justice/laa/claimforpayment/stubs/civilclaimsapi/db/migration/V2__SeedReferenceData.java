@@ -47,8 +47,8 @@ public class V2__SeedReferenceData extends BaseJavaMigration {
 
   private void insertClaims(Connection connection, ClaimsFile file) throws Exception {
     String sql =
-        "INSERT INTO claims (ufn, client, category, concluded, fee_type, escaped, claimed,"
-            + " submission_id, provider_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO claims (ufn, client, category, concluded, fee_type, escaped, counsel_payment,"
+            + " claimed, submission_id, provider_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -59,9 +59,10 @@ public class V2__SeedReferenceData extends BaseJavaMigration {
         ps.setDate(4, Date.valueOf(c.getConcluded()));
         ps.setString(5, c.getFeeType());
         ps.setBoolean(6, c.getEscaped());
-        ps.setBigDecimal(7, c.getClaimed());
-        ps.setObject(8, c.getSubmissionId());
-        ps.setObject(9, c.getProviderUserId());
+        ps.setString(7, c.getCounselPayment());
+        ps.setBigDecimal(8, c.getClaimed());
+        ps.setObject(9, c.getSubmissionId());
+        ps.setObject(10, c.getProviderUserId());
         ps.addBatch();
       }
 

@@ -49,6 +49,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 1))
             .feeType("Fixed")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .build();
 
@@ -61,6 +62,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 2))
             .feeType("Hourly")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(2000.0))
             .build();
 
@@ -73,6 +75,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 1))
             .feeType("Fixed")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .build();
 
@@ -85,6 +88,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 2))
             .feeType("Hourly")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(2000.0))
             .build();
 
@@ -110,6 +114,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 1))
             .feeType("Fixed")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .providerUserId(providerUserId)
             .build();
@@ -123,6 +128,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 2))
             .feeType("Hourly")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(2000.0))
             .providerUserId(providerUserId)
             .build();
@@ -136,6 +142,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 1))
             .feeType("Fixed")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .providerUserId(providerUserId)
             .build();
@@ -149,6 +156,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 2))
             .feeType("Hourly")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(2000.0))
             .providerUserId(providerUserId)
             .build();
@@ -178,6 +186,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 1))
             .feeType("Fixed")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .build();
 
@@ -190,6 +199,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 1))
             .feeType("Fixed")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .build();
 
@@ -225,6 +235,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 3))
             .feeType("Capped")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1500.0))
             .build();
 
@@ -237,6 +248,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 3))
             .feeType("Capped")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1500.0))
             .build();
 
@@ -258,6 +270,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 4))
             .feeType("Revised")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(2500.0))
             .build();
 
@@ -270,6 +283,7 @@ class DatabaseBasedClaimServiceTest {
             .concluded(LocalDate.of(2025, 7, 1))
             .feeType("Fixed")
             .escaped(false)
+            .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .build();
 
@@ -283,6 +297,7 @@ class DatabaseBasedClaimServiceTest {
     assertThat(claimEntity.getConcluded()).isEqualTo(LocalDate.of(2025, 7, 4));
     assertThat(claimEntity.getFeeType()).isEqualTo("Revised");
     assertThat(claimEntity.getEscaped()).isEqualTo(false);
+    assertThat(claimEntity.getCounselPayment()).isEqualTo("Paid and Reconciled");
     assertThat(claimEntity.getClaimed()).isEqualTo(new BigDecimal(2500.0));
 
     verify(mockClaimRepository).save(claimEntity);

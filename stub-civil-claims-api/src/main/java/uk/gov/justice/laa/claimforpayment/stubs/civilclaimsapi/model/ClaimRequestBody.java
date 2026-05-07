@@ -56,6 +56,10 @@ public class ClaimRequestBody implements Serializable {
   @Schema(description = "escaped status")
   private Boolean escaped;
 
+  @JsonProperty("counselPayment")
+  @Schema(description = "status of counsel payment")
+  private String counselPayment;
+
   @JsonProperty("claimed")
   @Schema(description = "amount claimed")
   private BigDecimal claimed;

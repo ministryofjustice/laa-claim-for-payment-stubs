@@ -43,6 +43,9 @@ public class ClaimEntity {
   @Column(name = "escaped")
   private Boolean escaped;
 
+  @Column(name = "counsel_payment")
+  private String counselPayment;
+
   @Column(name = "claimed", nullable = false, precision = 10, scale = 2)
   private BigDecimal claimed;
 

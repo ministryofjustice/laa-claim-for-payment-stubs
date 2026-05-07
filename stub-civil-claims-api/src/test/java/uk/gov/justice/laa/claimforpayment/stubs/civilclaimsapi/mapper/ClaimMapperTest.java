@@ -20,6 +20,7 @@ class ClaimMapperTest {
   private static final LocalDate CONCLUDED = LocalDate.of(2024, 7, 7);
   private static final String FEE_TYPE = "Standard";
   private static final Boolean ESCAPED = false;
+  private static final String COUNSEL_PAYMENT = "Paid and Reconciled";
   private static final BigDecimal CLAIMED = new BigDecimal(100.0);
 
   @InjectMocks private ClaimMapper claimMapper = new ClaimMapperImpl();
@@ -35,6 +36,7 @@ class ClaimMapperTest {
             .concluded(CONCLUDED)
             .feeType(FEE_TYPE)
             .escaped(ESCAPED)
+            .counselPayment(COUNSEL_PAYMENT)
             .claimed(CLAIMED)
             .build();
 
@@ -48,6 +50,7 @@ class ClaimMapperTest {
     assertThat(result.getConcluded()).isEqualTo(CONCLUDED);
     assertThat(result.getFeeType()).isEqualTo(FEE_TYPE);
     assertThat(result.getEscaped()).isEqualTo(ESCAPED);
+    assertThat(result.getCounselPayment()).isEqualTo(COUNSEL_PAYMENT);
     assertThat(result.getClaimed()).isEqualTo(CLAIMED);
   }
 
@@ -62,6 +65,7 @@ class ClaimMapperTest {
             .concluded(CONCLUDED)
             .feeType(FEE_TYPE)
             .escaped(ESCAPED)
+            .counselPayment(COUNSEL_PAYMENT)
             .claimed(CLAIMED)
             .build();
 
@@ -75,6 +79,7 @@ class ClaimMapperTest {
     assertThat(result.getConcluded()).isEqualTo(CONCLUDED);
     assertThat(result.getFeeType()).isEqualTo(FEE_TYPE);
     assertThat(result.getEscaped()).isEqualTo(ESCAPED);
+    assertThat(result.getCounselPayment()).isEqualTo(COUNSEL_PAYMENT);
     assertThat(result.getClaimed()).isEqualTo(CLAIMED);
   }
 }

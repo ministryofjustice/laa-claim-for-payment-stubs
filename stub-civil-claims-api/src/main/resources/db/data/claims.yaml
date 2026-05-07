@@ -24,7 +24,7 @@ claims:
     category: "Immigration and Asylum"
     concluded: "2025-03-13"
     feeType: "Hourly"
-    escaped: false
+    escaped: true
     claimed: 456.01
     submissionId: "550e8400-e29b-41d4-a716-446655440000"
     providerUserId: "123e4567-e89b-12d3-a456-426614174000"
@@ -44,7 +44,7 @@ claims:
     category: "Family"
     concluded: "2025-03-11"
     feeType: "Hourly"
-    escaped: false
+    escaped: true
     claimed: 234.56
     submissionId: "550e8400-e29b-41d4-a716-446655440000"
     providerUserId: "123e4567-e89b-12d3-a456-426614174000"
@@ -74,7 +74,7 @@ claims:
     category: "Family"
     concluded: "2025-03-01"
     feeType: "Fixed"
-    escaped: false
+    escaped: true
     claimed: 234.56
     submissionId: "550e8400-e29b-41d4-a716-446655440000"
     providerUserId: "123e4567-e89b-12d3-a456-426614174000"
@@ -84,7 +84,7 @@ claims:
     category: "Immigration and Asylum"
     concluded: "2025-03-01"
     feeType: "Fixed"
-    escaped: false
+    escaped: true
     claimed: 56.00
     submissionId: "550e8400-e29b-41d4-a716-446655440000"
     providerUserId: "123e4567-e89b-12d3-a456-426614174000"
@@ -124,7 +124,7 @@ claims:
     category: "Family"
     concluded: "2025-03-01"
     feeType: "Fixed"
-    escaped: false
+    escaped: true
     claimed: 234.56
     submissionId: "c45ae7b7-95e7-4c2f-b3b7-b95b03f71cf8"
     providerUserId: "d9c4b277-941c-451c-81c4-6b46b7f7ab59"

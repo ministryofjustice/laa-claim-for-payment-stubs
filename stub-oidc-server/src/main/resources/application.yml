@@ -48,6 +48,8 @@ spring:
               client-authentication-methods: ["client_secret_post"]
               authorization-grant-types: ["authorization_code", "refresh_token"]
               scopes: ["openid", "profile", "email", "https://claims-api/claims_write"]
+              redirect-uris: ["http://localhost:3000/callback"]
+              post-logout-redirect-uris: ["http://localhost:3000"]
             settings:
               client:
                 require-proof-key: true # PKCE enabled for Prod/Local
@@ -58,6 +60,8 @@ spring:
               client-authentication-methods: ["client_secret_post"]
               authorization-grant-types: ["authorization_code", "refresh_token"]
               scopes: ["openid", "profile", "email", "https://claims-api/claims_write"]
+              redirect-uris: ["http://localhost:3001/callback"]
+              post-logout-redirect-uris: ["http://localhost:3001"]   
             settings:
               client:
                 require-proof-key: true

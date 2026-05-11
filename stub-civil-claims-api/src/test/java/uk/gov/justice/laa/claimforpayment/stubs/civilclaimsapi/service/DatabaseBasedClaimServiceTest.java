@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,10 +23,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEvidenceEntity;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.LineItemEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.mapper.ClaimMapper;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidence;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.LineItem;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.repository.ClaimRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -176,7 +181,30 @@ class DatabaseBasedClaimServiceTest {
 
   @Test
   void shouldGetClaimById() {
+
     Long id = 1L;
+
+    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(1L).fileKey("fileKey1").build();
+    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(2L).fileKey("fileKey2").build();
+    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(3L).fileKey("fileKey3").build();
+    LineItem lineItem1 =
+        LineItem.builder().id(1L).evidenceItems(List.of(claimEvidence1, claimEvidence2)).build();
+    LineItem lineItem2 = LineItem.builder().id(2L).evidenceItems(List.of(claimEvidence3)).build();
+
+    ClaimEvidenceEntity claimEvidenceEntity1 =
+        ClaimEvidenceEntity.builder().id(1L).fileKey("fileKey1").build();
+    ClaimEvidenceEntity claimEvidenceEntity2 =
+        ClaimEvidenceEntity.builder().id(2L).fileKey("fileKey2").build();
+    ClaimEvidenceEntity claimEvidenceEntity3 =
+        ClaimEvidenceEntity.builder().id(3L).fileKey("fileKey3").build();
+    LineItemEntity lineItemEntity1 =
+        LineItemEntity.builder()
+            .id(1L)
+            .evidenceItems(Set.of(claimEvidenceEntity1, claimEvidenceEntity2))
+            .build();
+    LineItemEntity lineItemEntity2 =
+        LineItemEntity.builder().id(2L).evidenceItems(Set.of(claimEvidenceEntity3)).build();
+
     ClaimEntity claimEntity =
         ClaimEntity.builder()
             .id(id)
@@ -188,6 +216,8 @@ class DatabaseBasedClaimServiceTest {
             .escaped(false)
             .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
+            .lineItems(List.of(lineItemEntity1, lineItemEntity2))
+            .evidence(List.of(claimEvidenceEntity1, claimEvidenceEntity2, claimEvidenceEntity3))
             .build();
 
     Claim claim =
@@ -201,6 +231,8 @@ class DatabaseBasedClaimServiceTest {
             .escaped(false)
             .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
+            .lineItems(List.of(lineItem1, lineItem2))
+            .evidenceItems(List.of(claimEvidence1, claimEvidence2, claimEvidence3))
             .build();
 
     when(mockClaimRepository.findById(id)).thenReturn(Optional.of(claimEntity));
@@ -212,6 +244,7 @@ class DatabaseBasedClaimServiceTest {
     assertThat(result.getId()).isEqualTo(id);
     assertThat(result.getClient()).isEqualTo("John Doe");
     assertThat(result.getClaimed()).isEqualTo(new BigDecimal(1000.0));
+    assertThat(result.getLineItems()).hasSize(2).contains(lineItem1, lineItem2);
   }
 
   @Test

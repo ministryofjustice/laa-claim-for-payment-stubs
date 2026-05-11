@@ -60,5 +60,5 @@ public class ClaimEntity {
   private List<LineItemEntity> lineItems = new ArrayList<>();
 
   @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<ClaimEvidenceEntity> evidences = new ArrayList<>();
+  private List<ClaimEvidenceEntity> evidence = new ArrayList<>();
 }

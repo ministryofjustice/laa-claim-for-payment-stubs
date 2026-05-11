@@ -98,7 +98,32 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.feeType").value("Escape"))
         .andExpect(jsonPath("$.escaped").value(false))
         .andExpect(jsonPath("$.counselPayment").value("Paid and Reconciled"))
-        .andExpect(jsonPath("$.claimed").value(234.56));
+        .andExpect(jsonPath("$.claimed").value(234.56))
+        .andExpect(jsonPath("$.lineItems", hasSize(0)));
+  }
+
+  @Test
+  void shouldGetClaimWithLineItems() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/claims/{claimId}", 3)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(3))
+        .andExpect(jsonPath("$.ufn").value("121120/678"))
+        .andExpect(jsonPath("$.client").value("DeMello"))
+        .andExpect(jsonPath("$.lineItems", hasSize(3)))
+        .andExpect(jsonPath("$.lineItems[0].id").value(2))
+        .andExpect(jsonPath("$.lineItems[0].description").value("Legal representation"))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].id").value(1))
+        .andExpect(
+            jsonPath("$.lineItems[0].evidenceItems[0].fileKey").value("demello-invoice-001.pdf"))
+        .andExpect(jsonPath("$.lineItems[1].id").value(3));
   }
 
   @Test

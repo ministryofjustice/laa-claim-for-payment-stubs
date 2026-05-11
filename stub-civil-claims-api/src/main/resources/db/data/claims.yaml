@@ -173,3 +173,31 @@ claims:
     claimed: 52.00
     submissionId: "2c9b3892-9de7-4e76-b7c6-6d96fa36a6b3"
     providerUserId: "d9c4b277-941c-451c-81c4-6b46b7f7ab59"
+
+claim_evidence:
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    fileIdString: "demello-invoice-001.pdf"
+
+line_items:
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    description: "Legal advice"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    description: "Legal representation"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    description: "Court attendance"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    description: "Line Item 4"
+
+line_item_claim_evidence:
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    evidenceFileIdString: "demello-invoice-001.pdf"
+    lineItemDescription: "Legal representation"

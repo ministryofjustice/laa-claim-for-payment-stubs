@@ -37,7 +37,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.config.TestJwtConfig;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidence;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.LineItem;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.security.SecurityConfig;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.security.XAuthSecurityConfig;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service.DatabaseBasedClaimService;
@@ -126,6 +128,13 @@ class ClaimControllerTest {
   void getClaimById_returnsOkStatusAndOneClaim() throws Exception {
     UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
+    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(1L).fileKey("fileKey1").build();
+    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(2L).fileKey("fileKey2").build();
+    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(3L).fileKey("fileKey3").build();
+    LineItem lineItem1 =
+        LineItem.builder().id(1L).evidenceItems(List.of(claimEvidence1, claimEvidence2)).build();
+    LineItem lineItem2 = LineItem.builder().id(2L).evidenceItems(List.of(claimEvidence3)).build();
+
     when(mockClaimService.getClaim(1L))
         .thenReturn(
             Claim.builder()
@@ -138,6 +147,8 @@ class ClaimControllerTest {
                 .feeType("Fee type 1")
                 .escaped(true)
                 .counselPayment("Paid and Reconciled")
+                .lineItems(List.of(lineItem1, lineItem2))
+                .evidenceItems(List.of(claimEvidence1, claimEvidence2, claimEvidence3))
                 .build());
 
     mockMvc
@@ -153,7 +164,19 @@ class ClaimControllerTest {
         .andExpect(jsonPath("$.feeType").value("Fee type 1"))
         .andExpect(jsonPath("$.escaped").value(true))
         .andExpect(jsonPath("$.counselPayment").value("Paid and Reconciled"))
-        .andExpect(jsonPath("$.client").value("Smith"));
+        .andExpect(jsonPath("$.client").value("Smith"))
+        .andExpect(jsonPath("$.lineItems", hasSize(2)))
+        .andExpect(jsonPath("$.evidence", hasSize(3)))
+        .andExpect(jsonPath("$.lineItems[0].id").value(1))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].id").value(1))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileKey").value("fileKey1"))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].id").value(2))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileKey").value("fileKey2"))
+        .andExpect(jsonPath("$.lineItems[1].id").value(2))
+        .andExpect(jsonPath("$.lineItems[1].evidenceItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[1].evidenceItems[0].id").value(3))
+        .andExpect(jsonPath("$.lineItems[1].evidenceItems[0].fileKey").value("fileKey3"));
   }
 
   @Test

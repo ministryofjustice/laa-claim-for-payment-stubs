@@ -3,6 +3,7 @@ package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -22,10 +23,13 @@ public class LineItem {
   @JsonProperty("id")
   private Long id;
 
-  private String description;
+  private String title;
 
-  @Builder.Default
-  private List<ClaimEvidence> evidenceItems = new ArrayList<>();
+  private String category;
+
+  private LocalDate date;
+
+  @Builder.Default private List<ClaimEvidence> evidenceItems = new ArrayList<>();
 
   void addEvidence(ClaimEvidence evidence) {
     evidenceItems.add(evidence);

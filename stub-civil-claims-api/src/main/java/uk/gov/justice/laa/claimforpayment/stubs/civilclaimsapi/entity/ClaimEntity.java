@@ -57,8 +57,10 @@ public class ClaimEntity {
   private UUID submissionId;
 
   @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<LineItemEntity> lineItems = new ArrayList<>();
 
   @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<ClaimEvidenceEntity> evidence = new ArrayList<>();
 }

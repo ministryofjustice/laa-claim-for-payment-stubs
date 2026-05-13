@@ -175,29 +175,62 @@ claims:
     providerUserId: "d9c4b277-941c-451c-81c4-6b46b7f7ab59"
 
 claim_evidence:
-  - claimUfn: "121120/678"
-    client: "DeMello"
-    fileIdString: "demello-invoice-001.pdf"
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    fileIdString: "amoto-invoice-001.pdf"
 
 line_items:
   - claimUfn: "100323/098"
     client: "Amoto"
-    description: "Legal advice"
+    title: "Interim hearing"
+    category: "Work Item"
+    date: "2023-12-20"
 
   - claimUfn: "121120/678"
     client: "DeMello"
-    description: "Legal representation"
+    title: "Interim hearing"
+    category: "Work Item"
+    date: "2023-12-20"
 
   - claimUfn: "121120/678"
     client: "DeMello"
-    description: "Court attendance"
+    title: "Interim hearing"
+    category: "Work Item"
+    date: "2024-01-04"
 
   - claimUfn: "121120/678"
     client: "DeMello"
-    description: "Line Item 4"
+    title: "Final hearing"
+    category: "Work Item"
+    date: "2024-01-24"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Enquiry Agent"
+    category: "Disbursement"
+    date: "2023-12-23"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Enquiry Agent"
+    category: "Disbursement"
+    date: "2023-01-13"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Car Mileage"
+    category: "Disbursement"
+    date: "2023-12-20"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Car Mileage"
+    category: "Disbursement"
+    date: "2024-01-04"
 
 line_item_claim_evidence:
-  - claimUfn: "121120/678"
-    client: "DeMello"
-    evidenceFileIdString: "demello-invoice-001.pdf"
-    lineItemDescription: "Legal representation"
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    evidenceFileIdString: "amoto-invoice-001.pdf"
+    lineItemTitle: "Interim hearing"
+    lineItemDate: "2023-12-20"

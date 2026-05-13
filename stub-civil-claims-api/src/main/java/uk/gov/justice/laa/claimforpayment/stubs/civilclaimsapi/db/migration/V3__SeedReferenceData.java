@@ -96,7 +96,7 @@ public class V3__SeedReferenceData extends BaseJavaMigration {
       // ---------- 3. insert line_items ----------
       Map<String, Long> lineItemIdsByKey = new HashMap<>();
 
-      String insertLineItemSql = "INSERT INTO line_items (claim_id, description) VALUES (?, ?)";
+      String insertLineItemSql = "INSERT INTO line_items (claim_id, title, category, date) VALUES (?, ?, ?, ?)";
 
       try (PreparedStatement ps =
           connection.prepareStatement(insertLineItemSql, Statement.RETURN_GENERATED_KEYS)) {
@@ -104,12 +104,14 @@ public class V3__SeedReferenceData extends BaseJavaMigration {
         for (LineItemRow li : file.line_items) {
 
           String claimKey = li.claimUfn + "|" + li.client;
-          String lineItemKey = claimKey + "|" + li.description;
+          String lineItemKey = claimKey + "|" + li.title;
 
           long claimId = claimIdsByKey.get(claimKey);
 
           ps.setLong(1, claimId);
-          ps.setString(2, li.description);
+          ps.setString(2, li.title);
+          ps.setString(3, li.category);
+          ps.setDate(4, Date.valueOf(li.date));
           ps.executeUpdate();
 
           try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -128,7 +130,7 @@ public class V3__SeedReferenceData extends BaseJavaMigration {
         for (LineItemEvidenceRow link : file.line_item_claim_evidence) {
 
           String claimKey = link.claimUfn + "|" + link.client;
-          String lineItemKey = claimKey + "|" + link.lineItemDescription;
+          String lineItemKey = claimKey + "|" + link.lineItemTitle;
 
           Long lineItemId = lineItemIdsByKey.get(lineItemKey);
           Long evidenceId = evidenceIdsByKey.get(claimKey + ":" + link.evidenceFileIdString);
@@ -249,13 +251,17 @@ public class V3__SeedReferenceData extends BaseJavaMigration {
   static class LineItemRow {
     public String client;
     public String claimUfn;
-    public String description;
+    public String title;
+    public String category;
+    public LocalDate date;
   }
 
   static class LineItemEvidenceRow {
     public String client;
     public String claimUfn;
     public String evidenceFileIdString;
-    public String lineItemDescription;
+    public String lineItemTitle;
+    public String lineItemCategory;
+    public LocalDate lineItemDate;
   }
 }

@@ -42,7 +42,7 @@ public class ClaimsSeeder {
   private static final AtomicBoolean HAS_RUN = new AtomicBoolean(false);
 
   @Bean
-  @Profile("test")
+  @Profile("!prod")
   public ApplicationRunner seederRunner(ClaimsSeeder seeder) {
     return args -> seeder.seed();
   }

@@ -14,10 +14,10 @@ test {
 }
 
 integrationTest {
-    // testLogging {
-    //     events "passed", "skipped", "failed", "standard_out", "standard_error"
-    //     showStandardStreams = true
-    // }
+    testLogging {
+        events "passed", "skipped", "failed", "standard_out", "standard_error"
+        showStandardStreams = true
+    }
 }
 
 jacocoTestReport {

@@ -1,12 +1,16 @@
 package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.controller;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -98,7 +102,34 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.feeType").value("Escape"))
         .andExpect(jsonPath("$.escaped").value(false))
         .andExpect(jsonPath("$.counselPayment").value("Paid and Reconciled"))
-        .andExpect(jsonPath("$.claimed").value(234.56));
+        .andExpect(jsonPath("$.claimed").value(234.56))
+        .andExpect(jsonPath("$.lineItems", hasSize(0)));
+  }
+
+  @Test
+  void shouldGetClaimWithLineItems() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/claims/{claimId}", 2)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(2))
+        .andExpect(jsonPath("$.ufn").value("100323/098"))
+        .andExpect(jsonPath("$.client").value("Amoto"))
+        .andExpect(jsonPath("$.lineItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].id").value(1))
+        .andExpect(jsonPath("$.lineItems[0].title").value("Interim hearing"))
+        .andExpect(jsonPath("$.lineItems[0].category").value("Work Item"))
+        .andExpect(jsonPath("$.lineItems[0].date").value("2023-12-20"))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].id").value(1))
+        .andExpect(
+            jsonPath("$.lineItems[0].evidenceItems[0].fileKey").value("amoto-invoice-001.pdf"))
+        .andExpect(jsonPath("$.lineItems[0].id").value(1));
   }
 
   @Test
@@ -169,6 +200,79 @@ class ClaimControllerIntegrationTest {
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
                         .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void addLineItemToClaim_returnsCreatedStatusAndLocationHeader() throws Exception {
+    String requestBody =
+        """
+        {
+          "title": "New Line Item",
+          "category": "New Line Item Category"
+        }
+        """;
+    mockMvc
+        .perform(
+            patch("/api/v1/claims/{claimId}/line-items", 3)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isCreated())
+        .andExpect(
+            header().string("Location", matchesPattern(".*/api/v1/claims/3/line-items/\\d+$")));
+  }
+
+  @Test
+  void addEvidenceToClaim_returnsCreatedStatusAndLocationHeader() throws Exception {
+    String requestBody =
+        """
+        {
+          "file-key": "New file key for evidence"
+        }
+        """;
+    mockMvc
+        .perform(
+            patch("/api/v1/claims/{claimId}/evidence", 3)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isCreated())
+        .andExpect(
+            header().string("Location", matchesPattern(".*/api/v1/claims/3/evidence/\\d+$")));
+  }
+
+  @Test
+  void addEvidenceToLineItem_returnsNoContentStatus() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/claims/3/line-items/2/evidence/1")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get("/api/v1/claims/{claimId}", 3)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(3))
+        .andExpect(jsonPath("$.lineItems", hasSize(7)))
+        .andDo(print())
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)));
   }
 
   private String xAuthTokenWithUserId(String userId) {

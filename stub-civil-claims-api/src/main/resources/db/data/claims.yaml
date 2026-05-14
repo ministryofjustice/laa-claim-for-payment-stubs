@@ -173,3 +173,64 @@ claims:
     claimed: 52.00
     submissionId: "2c9b3892-9de7-4e76-b7c6-6d96fa36a6b3"
     providerUserId: "d9c4b277-941c-451c-81c4-6b46b7f7ab59"
+
+claim_evidence:
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    fileIdString: "amoto-invoice-001.pdf"
+
+line_items:
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    title: "Interim hearing"
+    category: "Work Item"
+    date: "2023-12-20"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Interim hearing"
+    category: "Work Item"
+    date: "2023-12-20"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Interim hearing"
+    category: "Work Item"
+    date: "2024-01-04"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Final hearing"
+    category: "Work Item"
+    date: "2024-01-24"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Enquiry Agent"
+    category: "Disbursement"
+    date: "2023-12-23"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Enquiry Agent"
+    category: "Disbursement"
+    date: "2023-01-13"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Car Mileage"
+    category: "Disbursement"
+    date: "2023-12-20"
+
+  - claimUfn: "121120/678"
+    client: "DeMello"
+    title: "Car Mileage"
+    category: "Disbursement"
+    date: "2024-01-04"
+
+line_item_claim_evidence:
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    evidenceFileIdString: "amoto-invoice-001.pdf"
+    lineItemTitle: "Interim hearing"
+    lineItemDate: "2023-12-20"

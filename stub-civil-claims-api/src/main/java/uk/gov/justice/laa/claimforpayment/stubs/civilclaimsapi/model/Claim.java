@@ -76,25 +76,4 @@ public class Claim implements Serializable {
   @JsonProperty("submissionId")
   private UUID submissionId;
 
-  /** Attaches evidence to a line item. */
-  public void attachEvidenceToLineItem(Long evidenceId, Long lineItemId) {
-    ClaimEvidence evidence = findEvidence(evidenceId);
-    LineItem lineItem = findLineItem(lineItemId);
-
-    lineItem.addEvidence(evidence);
-  }
-
-  private ClaimEvidence findEvidence(Long claimEvidenceId) {
-    return evidenceItems.stream()
-        .filter(e -> e.getId().equals(claimEvidenceId))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Evidence not found"));
-  }
-
-  private LineItem findLineItem(Long id) {
-    return lineItems.stream()
-        .filter(li -> li.getId().equals(id))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Line item not found"));
-  }
 }

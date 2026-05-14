@@ -449,4 +449,34 @@ class DatabaseBasedClaimServiceTest {
 
     assertThat(result).isNotNull().isEqualTo(3L);
   }
+
+  @Test
+  void shouldLinkEvidenceToLineItem() {
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity).build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity).build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    claimService.linkEvidenceToLineItem(1L, 1L, 1L);
+
+    assertThat(lineItemEntity.getEvidenceItems()).contains(claimEvidenceEntity);
+  }
 }

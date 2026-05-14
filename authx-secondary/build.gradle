@@ -20,10 +20,10 @@ repositories {
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
-        testLogging {
-        events "passed", "skipped", "failed", "standard_out", "standard_error"
-        showStandardStreams = true
-    }
+    //     testLogging {
+    //     events "passed", "skipped", "failed", "standard_out", "standard_error"
+    //     showStandardStreams = true
+    // }
 }
 
 jacocoTestReport {
@@ -35,6 +35,10 @@ jacocoTestReport {
 }
 
 jacocoTestCoverageVerification {
+    dependsOn compileJava
+    dependsOn processResources
+    
+    shouldRunAfter jacocoTestReport
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it)

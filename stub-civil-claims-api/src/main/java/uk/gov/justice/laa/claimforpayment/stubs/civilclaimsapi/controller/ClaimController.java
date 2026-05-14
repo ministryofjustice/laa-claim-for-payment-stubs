@@ -292,7 +292,7 @@ public class ClaimController {
         @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
       })
   @PostMapping("/{claimId}/line-items/{lineItemId}/evidence/{evidenceId}")
-  public ResponseEntity<AddClaimEvidenceResponse> addEvidenceToLineItem(
+  public ResponseEntity<Void> addEvidenceToLineItem(
       @Parameter(description = "ID of the claim the line item belongs to", required = true)
           @PathVariable
           Long claimId,

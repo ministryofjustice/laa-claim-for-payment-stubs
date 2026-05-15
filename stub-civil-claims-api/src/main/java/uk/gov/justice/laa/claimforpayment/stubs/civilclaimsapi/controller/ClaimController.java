@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.AddClaimEvidenceResponse;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.AddLineItemResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidenceRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimPageResponse;
@@ -229,11 +231,11 @@ public class ClaimController {
   @Operation(summary = "Add a line item to a claim")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "204", description = "Item added to claim successfully"),
+        @ApiResponse(responseCode = "201", description = "Line item added to claim successfully"),
         @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
       })
   @PatchMapping("/{claimId}/line-items")
-  public ResponseEntity<Void> addLineItemToClaim(
+  public ResponseEntity<AddLineItemResponse> addLineItemToClaim(
       @Parameter(description = "ID of the claim to update", required = true) @PathVariable
           Long claimId,
       @Parameter(description = "line item data", required = true) @Valid @RequestBody
@@ -244,7 +246,7 @@ public class ClaimController {
     Long lineItemId = claimService.addLineItemToClaim(claimId, requestBody);
 
     URI location = URI.create("/api/v1/claims/" + claimId + "/line-items/" + lineItemId);
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.created(location).body(new AddLineItemResponse(lineItemId));
   }
 
   /**
@@ -257,11 +259,11 @@ public class ClaimController {
   @Operation(summary = "Add evidence to a claim")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "204", description = "Evidence added to claim successfully"),
+        @ApiResponse(responseCode = "201", description = "Evidence added to claim successfully"),
         @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
       })
   @PatchMapping("/{claimId}/evidence")
-  public ResponseEntity<Void> addEvidenceToClaim(
+  public ResponseEntity<AddClaimEvidenceResponse> addEvidenceToClaim(
       @Parameter(description = "ID of the claim to update", required = true) @PathVariable
           Long claimId,
       @Parameter(description = "evidence data", required = true) @Valid @RequestBody
@@ -272,7 +274,7 @@ public class ClaimController {
     Long evidenceId = claimService.addEvidenceToClaim(claimId, requestBody);
 
     URI location = URI.create("/api/v1/claims/" + claimId + "/evidence/" + evidenceId);
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.created(location).body(new AddClaimEvidenceResponse(evidenceId));
   }
 
   /**

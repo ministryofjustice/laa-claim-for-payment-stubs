@@ -231,8 +231,20 @@ public class ClaimController {
   @Operation(summary = "Add a line item to a claim")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "201", description = "Line item added to claim successfully"),
-        @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
+        @ApiResponse(
+            responseCode = "201",
+            description = "Line item added to claim successfully",
+            headers =
+                @Header(
+                    name = "Location",
+                    description = "URI of the created line item resource",
+                    schema =
+                        @Schema(type = "string", example = "/api/v1/claims/123/line-items/456")),
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AddLineItemResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
       })
   @PatchMapping("/{claimId}/line-items")
   public ResponseEntity<AddLineItemResponse> addLineItemToClaim(
@@ -259,8 +271,19 @@ public class ClaimController {
   @Operation(summary = "Add evidence to a claim")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "201", description = "Evidence added to claim successfully"),
-        @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
+        @ApiResponse(
+            responseCode = "201",
+            description = "Evidence added to claim successfully",
+            headers =
+                @Header(
+                    name = "Location",
+                    description = "URI of the created evidence resource",
+                    schema = @Schema(type = "string", example = "/api/v1/claims/123/evidence/456")),
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AddClaimEvidenceResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
       })
   @PatchMapping("/{claimId}/evidence")
   public ResponseEntity<AddClaimEvidenceResponse> addEvidenceToClaim(
@@ -288,8 +311,10 @@ public class ClaimController {
   @Operation(summary = "Add existing evidence to a line item in a claim")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "204", description = "Evidence added to claim successfully"),
-        @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
+        @ApiResponse(
+            responseCode = "204",
+            description = "Evidence linked to line item successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
       })
   @PostMapping("/{claimId}/line-items/{lineItemId}/evidence/{evidenceId}")
   public ResponseEntity<Void> addEvidenceToLineItem(

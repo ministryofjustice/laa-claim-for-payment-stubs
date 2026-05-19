@@ -231,7 +231,7 @@ class ClaimControllerIntegrationTest {
     String requestBody =
         """
         {
-          "file-key": "New file key for evidence"
+          "fileKey": "New file key for evidence"
         }
         """;
     mockMvc

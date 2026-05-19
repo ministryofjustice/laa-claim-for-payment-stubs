@@ -23,7 +23,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    * @return the response status with error message
    */
   @ExceptionHandler(ClaimNotFoundException.class)
-  public ResponseEntity<String> handleItemNotFound(ClaimNotFoundException exception) {
+  public ResponseEntity<String> handleClaimNotFound(ClaimNotFoundException exception) {
+    return ResponseEntity.status(NOT_FOUND).body(exception.getMessage());
+  }
+
+  /**
+   * The handler for LineItemNotFoundException.
+   *
+   * @param exception the exception
+   * @return the response status with error message
+   */
+  @ExceptionHandler(LineItemNotFoundException.class)
+  public ResponseEntity<String> handleLineItemNotFound(LineItemNotFoundException exception) {
+    return ResponseEntity.status(NOT_FOUND).body(exception.getMessage());
+  }
+
+  /**
+   * The handler for ClaimEvidenceNotFoundException.
+   *
+   * @param exception the exception
+   * @return the response status with error message
+   */
+  @ExceptionHandler(ClaimEvidenceNotFoundException.class)
+  public ResponseEntity<String> handleClaimEvidenceNotFound(
+      ClaimEvidenceNotFoundException exception) {
     return ResponseEntity.status(NOT_FOUND).body(exception.getMessage());
   }
 

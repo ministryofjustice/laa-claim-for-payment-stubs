@@ -39,7 +39,7 @@ public class ClaimEvidenceEntity {
 
   private String fileKey;
 
-  private long fileSize;
+  private Long fileSize;
 
   @ManyToMany(mappedBy = "evidenceItems")
   @Builder.Default

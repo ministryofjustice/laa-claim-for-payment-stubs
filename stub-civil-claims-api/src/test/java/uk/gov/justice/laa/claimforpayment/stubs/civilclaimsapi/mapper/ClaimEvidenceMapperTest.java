@@ -13,7 +13,7 @@ class ClaimEvidenceMapperTest {
 
   @Test
   void shouldMapToClaimEvidenceEntity() {
-    ClaimEvidence claimEvidence = ClaimEvidence.builder().fileKey("fileKey").fileSize(1000).build();
+    ClaimEvidence claimEvidence = ClaimEvidence.builder().fileKey("fileKey").fileSize(1000L).build();
 
     var claimEvidenceEntity = claimEvidenceMapper.toClaimEvidenceEntity(claimEvidence);
 
@@ -24,7 +24,7 @@ class ClaimEvidenceMapperTest {
 
   @Test
   void shouldMapToClaimEvidence() {
-    var claimEvidenceEntity = ClaimEvidenceEntity.builder().fileKey("fileKey").fileSize(1000).build();
+    var claimEvidenceEntity = ClaimEvidenceEntity.builder().fileKey("fileKey").fileSize(1000L).build();
 
     var claimEvidence = claimEvidenceMapper.toClaimEvidence(claimEvidenceEntity);
 

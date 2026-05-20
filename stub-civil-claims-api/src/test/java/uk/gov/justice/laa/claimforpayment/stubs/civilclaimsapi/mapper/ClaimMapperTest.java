@@ -31,9 +31,9 @@ class ClaimMapperTest {
   private static final Long EVIDENCE_ID_1 = 10L;
   private static final Long EVIDENCE_ID_2 = 20L;
   private static final ClaimEvidence CLAIM_EVIDENCE_1 =
-      ClaimEvidence.builder().id(EVIDENCE_ID_1).fileKey("fileKey1").fileSize(1000).build();
+      ClaimEvidence.builder().id(EVIDENCE_ID_1).fileKey("fileKey1").fileSize(1000L).build();
   private static final ClaimEvidence CLAIM_EVIDENCE_2 =
-      ClaimEvidence.builder().id(EVIDENCE_ID_2).fileKey("fileKey2").fileSize(2000).build();
+      ClaimEvidence.builder().id(EVIDENCE_ID_2).fileKey("fileKey2").fileSize(2000L).build();
   private static final LineItem LINE_ITEM_1 =
       LineItem.builder().id(LINE_ITEM_ID_1).evidenceItems(List.of(CLAIM_EVIDENCE_1)).build();
   private static final LineItem LINE_ITEM_2 =

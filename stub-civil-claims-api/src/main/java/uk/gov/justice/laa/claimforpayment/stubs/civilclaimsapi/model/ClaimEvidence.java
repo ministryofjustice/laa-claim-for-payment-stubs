@@ -22,5 +22,5 @@ public class ClaimEvidence {
 
   private String fileKey;
 
-  private long fileSize;
+  private Long fileSize;
 }

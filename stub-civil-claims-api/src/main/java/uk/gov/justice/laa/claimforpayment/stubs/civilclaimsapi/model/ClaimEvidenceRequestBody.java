@@ -27,4 +27,9 @@ public class ClaimEvidenceRequestBody implements Serializable {
   @Schema(description = "The file key for the evidence")
   @JsonProperty("fileKey")
   private String fileKey;
+
+  @NotNull
+  @Schema(description = "The file size for the evidence")
+  @JsonProperty("fileSize")
+  private Long fileSize;
 }

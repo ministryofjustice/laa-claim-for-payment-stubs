@@ -262,7 +262,7 @@ public class ClaimsSeeder {
     public String claimUfn;
     public String client;
     public String fileIdString;
-    public long fileSize;
+    public Long fileSize;
   }
 
   /** DTO for a line item row. */

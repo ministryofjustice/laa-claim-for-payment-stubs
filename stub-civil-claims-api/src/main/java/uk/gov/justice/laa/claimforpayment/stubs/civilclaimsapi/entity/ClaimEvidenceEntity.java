@@ -39,6 +39,8 @@ public class ClaimEvidenceEntity {
 
   private String fileKey;
 
+  private Long fileSize;
+
   @ManyToMany(mappedBy = "evidenceItems")
   @Builder.Default
   private Set<LineItemEntity> lineItems = new HashSet<>();

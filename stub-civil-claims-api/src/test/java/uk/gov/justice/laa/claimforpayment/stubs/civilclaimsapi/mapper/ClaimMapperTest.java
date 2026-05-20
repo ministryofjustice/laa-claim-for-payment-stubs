@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEvidenceEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidence;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.LineItem;
@@ -30,9 +31,9 @@ class ClaimMapperTest {
   private static final Long EVIDENCE_ID_1 = 10L;
   private static final Long EVIDENCE_ID_2 = 20L;
   private static final ClaimEvidence CLAIM_EVIDENCE_1 =
-      ClaimEvidence.builder().id(EVIDENCE_ID_1).fileKey("fileKey1").build();
+      ClaimEvidence.builder().id(EVIDENCE_ID_1).fileKey("fileKey1").fileSize(1000L).build();
   private static final ClaimEvidence CLAIM_EVIDENCE_2 =
-      ClaimEvidence.builder().id(EVIDENCE_ID_2).fileKey("fileKey2").build();
+      ClaimEvidence.builder().id(EVIDENCE_ID_2).fileKey("fileKey2").fileSize(2000L).build();
   private static final LineItem LINE_ITEM_1 =
       LineItem.builder().id(LINE_ITEM_ID_1).evidenceItems(List.of(CLAIM_EVIDENCE_1)).build();
   private static final LineItem LINE_ITEM_2 =
@@ -74,20 +75,21 @@ class ClaimMapperTest {
     assertThat(result.getClaimed()).isEqualTo(CLAIMED);
     assertThat(result.getLineItems()).hasSize(2);
     assertThat(result.getLineItems().get(0).getEvidenceItems()).hasSize(1);
-    assertThat(
-            result.getLineItems().get(0).getEvidenceItems().stream()
-                .map(e -> e.getFileKey())
-                .toList())
-        .containsExactlyInAnyOrder("fileKey1");
     assertThat(result.getLineItems().get(0).getId()).isEqualTo(LINE_ITEM_ID_1);
     assertThat(result.getLineItems().get(1).getId()).isEqualTo(LINE_ITEM_ID_2);
     assertThat(result.getLineItems().get(0).getEvidenceItems()).hasSize(1);
-    assertThat(result.getLineItems().get(0).getEvidenceItems().iterator().next().getId())
-        .isEqualTo(EVIDENCE_ID_1);
+    List<ClaimEvidenceEntity> lineItem1Evidence = result.getLineItems().get(0).getEvidenceItems().stream().toList();
+    assertThat(lineItem1Evidence.get(0).getId()).isEqualTo(EVIDENCE_ID_1);
+    assertThat(lineItem1Evidence.get(0).getFileKey()).isEqualTo("fileKey1");
+    assertThat(lineItem1Evidence.get(0).getFileSize()).isEqualTo(1000);
     assertThat(result.getLineItems().get(1).getEvidenceItems()).hasSize(2);
-    assertThat(
-            result.getLineItems().get(1).getEvidenceItems().stream().map(e -> e.getId()).toList())
-        .containsExactlyInAnyOrder(EVIDENCE_ID_1, EVIDENCE_ID_2);
+    List<ClaimEvidenceEntity> lineItem2Evidence = result.getLineItems().get(1).getEvidenceItems().stream().toList();
+    assertThat(lineItem2Evidence.get(0).getId()).isEqualTo(EVIDENCE_ID_1);
+    assertThat(lineItem2Evidence.get(0).getFileKey()).isEqualTo("fileKey1");
+    assertThat(lineItem2Evidence.get(0).getFileSize()).isEqualTo(1000);
+    assertThat(lineItem2Evidence.get(1).getId()).isEqualTo(EVIDENCE_ID_2);
+    assertThat(lineItem2Evidence.get(1).getFileKey()).isEqualTo("fileKey2");
+    assertThat(lineItem2Evidence.get(1).getFileSize()).isEqualTo(2000);
   }
 
   @Test

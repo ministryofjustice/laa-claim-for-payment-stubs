@@ -190,9 +190,9 @@ class DatabaseBasedClaimServiceTest {
 
     Long id = 1L;
 
-    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(1L).fileKey("fileKey1").build();
-    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(2L).fileKey("fileKey2").build();
-    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(3L).fileKey("fileKey3").build();
+    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(1L).fileKey("fileKey1").fileSize(1000L).build();
+    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(2L).fileKey("fileKey2").fileSize(2000L).build();
+    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(3L).fileKey("fileKey3").fileSize(3000L).build();
     LineItem lineItem1 =
         LineItem.builder().id(1L).evidenceItems(List.of(claimEvidence1, claimEvidence2)).build();
     LineItem lineItem2 = LineItem.builder().id(2L).evidenceItems(List.of(claimEvidence3)).build();

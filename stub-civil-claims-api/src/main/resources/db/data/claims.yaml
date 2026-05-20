@@ -178,6 +178,7 @@ claim_evidence:
   - claimUfn: "100323/098"
     client: "Amoto"
     fileIdString: "amoto-invoice-001.pdf"
+    fileSize: 5000000
 
 line_items:
   - claimUfn: "100323/098"

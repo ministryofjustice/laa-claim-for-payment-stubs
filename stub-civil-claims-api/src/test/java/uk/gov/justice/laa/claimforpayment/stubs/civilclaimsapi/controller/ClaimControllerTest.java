@@ -366,7 +366,8 @@ class ClaimControllerTest {
     String requestBody =
         """
         {
-          "fileKey": "evidence-file-key"
+          "fileKey": "evidence-file-key",
+          "fileSize": 1000
         }
         """;
 
@@ -385,6 +386,7 @@ class ClaimControllerTest {
     verify(mockClaimService).addEvidenceToClaim(eq(3L), claimEvidenceRequestBodyCaptor.capture());
     ClaimEvidenceRequestBody capturedRequestBody = claimEvidenceRequestBodyCaptor.getValue();
     assert capturedRequestBody.getFileKey().equals("evidence-file-key");
+    assert capturedRequestBody.getFileSize().equals(1000L);
   }
 
   @Test

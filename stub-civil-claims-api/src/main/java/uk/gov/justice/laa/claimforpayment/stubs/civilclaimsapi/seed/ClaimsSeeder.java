@@ -131,7 +131,7 @@ public class ClaimsSeeder {
       Connection connection, ClaimsFile file, Map<String, Long> claimIds) throws SQLException {
 
     Map<String, Long> evidenceIds = new HashMap<>();
-    String sql = "INSERT INTO claim_evidence (claim_id, file_key) VALUES (?, ?)";
+    String sql = "INSERT INTO claim_evidence (claim_id, file_key, file_size) VALUES (?, ?, ?)";
 
     try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -139,6 +139,7 @@ public class ClaimsSeeder {
         String key = e.claimUfn + "|" + e.client;
         ps.setLong(1, claimIds.get(key));
         ps.setString(2, e.fileIdString);
+        ps.setLong(3, e.fileSize);
         ps.executeUpdate();
 
         try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -261,6 +262,7 @@ public class ClaimsSeeder {
     public String claimUfn;
     public String client;
     public String fileIdString;
+    public long fileSize;
   }
 
   /** DTO for a line item row. */

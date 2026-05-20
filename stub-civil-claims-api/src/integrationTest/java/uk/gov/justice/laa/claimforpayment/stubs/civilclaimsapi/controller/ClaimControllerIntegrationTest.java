@@ -127,9 +127,8 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.lineItems[0].date").value("2023-12-20"))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].id").value(1))
-        .andExpect(
-            jsonPath("$.lineItems[0].evidenceItems[0].fileKey").value("amoto-invoice-001.pdf"))
-        .andExpect(jsonPath("$.lineItems[0].id").value(1));
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileKey").value("amoto-invoice-001.pdf"))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileSize").value(5000000));
   }
 
   @Test

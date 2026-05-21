@@ -305,7 +305,7 @@ public class ClaimController {
    *
    * @param claimId the ID of the claim to update
    * @param lineItemId the ID of the line item to update
-   * @param evidenceId the ID of the evidence to link to the line item
+   * @param evidenceIds the IDs of the evidence to link to the line item
    * @return a response entity with no content if the evidence is added successfully
    */
   @Operation(summary = "Add existing evidence to a line item in a claim")
@@ -316,23 +316,23 @@ public class ClaimController {
             description = "Evidence linked to line item successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
       })
-  @PostMapping("/{claimId}/line-items/{lineItemId}/evidence/{evidenceId}")
+  @PostMapping("/{claimId}/line-items/{lineItemId}/evidence")
   public ResponseEntity<Void> addEvidenceToLineItem(
       @Parameter(description = "ID of the claim the line item belongs to", required = true)
           @PathVariable
           Long claimId,
       @Parameter(description = "ID of the line item to update", required = true) @PathVariable
           Long lineItemId,
-      @Parameter(description = "ID of the evidence to link", required = true) @PathVariable
-          Long evidenceId) {
+      @Parameter(description = "IDs of the evidence to link", required = true) @Valid @RequestBody
+          List<Long> evidenceIds) {
 
     log.debug(
         "Adding existing evidence with ID:{} to line item with ID:{} on claim with ID: {}",
-        evidenceId,
+        evidenceIds,
         lineItemId,
         claimId);
 
-    claimService.linkEvidenceToLineItem(claimId, lineItemId, evidenceId);
+    claimService.linkEvidenceToLineItem(claimId, lineItemId, evidenceIds);
 
     return ResponseEntity.noContent().build();
   }

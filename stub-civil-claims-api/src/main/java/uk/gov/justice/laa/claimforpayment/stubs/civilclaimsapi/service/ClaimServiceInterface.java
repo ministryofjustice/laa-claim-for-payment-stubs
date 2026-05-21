@@ -63,5 +63,5 @@ public interface ClaimServiceInterface {
 
   Long addEvidenceToClaim(Long claimId, ClaimEvidenceRequestBody requestBody);
 
-  void linkEvidenceToLineItem(Long claimId, Long lineItemId, Long evidenceId);
+  void linkEvidenceToLineItem(Long claimId, Long lineItemId, List<Long> evidenceIds);
 }

@@ -125,10 +125,13 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.lineItems[0].title").value("Interim hearing"))
         .andExpect(jsonPath("$.lineItems[0].category").value("Work Item"))
         .andExpect(jsonPath("$.lineItems[0].date").value("2023-12-20"))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].id").value(1))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileKey").value("amoto-invoice-001.pdf"))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileSize").value(5000000));
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileSize").value(5000000))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].id").value(2))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileKey").value("amoto-invoice-002.pdf"))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileSize").value(4000000));
   }
 
   @Test
@@ -273,6 +276,32 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.lineItems", hasSize(7)))
         .andDo(print())
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)));
+  }
+
+  @Test
+  void addMultipleEvidenceToLineItem_returnsNoContentStatus() throws Exception {
+    mockMvc
+      .perform(
+        post("/api/v1/claims/3/line-items/2/evidence/1,2")
+          .with(
+            jwt()
+              .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+              .authorities(() -> "SCOPE_" + claimsWriteScope)))
+      .andExpect(status().isNoContent());
+
+    mockMvc
+      .perform(
+        get("/api/v1/claims/{claimId}", 3)
+          .with(
+            jwt()
+              .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+              .authorities(() -> "SCOPE_" + claimsWriteScope)))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.id").value(3))
+      .andExpect(jsonPath("$.lineItems", hasSize(7)))
+      .andDo(print())
+      .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)));
   }
 
   private String xAuthTokenWithUserId(String userId) {

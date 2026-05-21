@@ -475,7 +475,7 @@ class DatabaseBasedClaimServiceTest {
     when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
     when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
 
-    claimService.linkEvidenceToLineItem(1L, 1L, 1L);
+    claimService.linkEvidenceToLineItem(1L, 1L, List.of(1L));
 
     assertThat(lineItemEntity.getEvidenceItems()).contains(claimEvidenceEntity);
   }

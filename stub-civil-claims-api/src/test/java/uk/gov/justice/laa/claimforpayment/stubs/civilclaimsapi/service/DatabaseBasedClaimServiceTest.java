@@ -238,7 +238,7 @@ class DatabaseBasedClaimServiceTest {
             .counselPayment("Paid and Reconciled")
             .claimed(new BigDecimal(1000.0))
             .lineItems(List.of(lineItem1, lineItem2))
-            .evidenceItems(List.of(claimEvidence1, claimEvidence2, claimEvidence3))
+            .evidence(List.of(claimEvidence1, claimEvidence2, claimEvidence3))
             .build();
 
     when(mockClaimRepository.findById(id)).thenReturn(Optional.of(claimEntity));
@@ -251,6 +251,7 @@ class DatabaseBasedClaimServiceTest {
     assertThat(result.getClient()).isEqualTo("John Doe");
     assertThat(result.getClaimed()).isEqualTo(new BigDecimal(1000.0));
     assertThat(result.getLineItems()).hasSize(2).contains(lineItem1, lineItem2);
+    assertThat(result.getEvidence()).hasSize(3).contains(claimEvidence1, claimEvidence2, claimEvidence3);
   }
 
   @Test

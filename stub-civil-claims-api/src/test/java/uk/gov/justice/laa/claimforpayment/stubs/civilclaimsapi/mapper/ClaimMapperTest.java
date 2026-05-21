@@ -58,7 +58,7 @@ class ClaimMapperTest {
             .counselPayment(COUNSEL_PAYMENT)
             .claimed(CLAIMED)
             .lineItems(List.of(LINE_ITEM_1, LINE_ITEM_2))
-            .evidenceItems(List.of(CLAIM_EVIDENCE_1, CLAIM_EVIDENCE_2))
+            .evidence(List.of(CLAIM_EVIDENCE_1, CLAIM_EVIDENCE_2))
             .build();
 
     ClaimEntity result = claimMapper.toClaimEntity(claim);
@@ -78,6 +78,7 @@ class ClaimMapperTest {
     assertThat(result.getLineItems().get(0).getId()).isEqualTo(LINE_ITEM_ID_1);
     assertThat(result.getLineItems().get(1).getId()).isEqualTo(LINE_ITEM_ID_2);
     assertThat(result.getLineItems().get(0).getEvidenceItems()).hasSize(1);
+    assertThat(result.getEvidence()).hasSize(2);
     List<ClaimEvidenceEntity> lineItem1Evidence = result.getLineItems().get(0).getEvidenceItems().stream().toList();
     assertThat(lineItem1Evidence.get(0).getId()).isEqualTo(EVIDENCE_ID_1);
     assertThat(lineItem1Evidence.get(0).getFileKey()).isEqualTo("fileKey1");
@@ -94,6 +95,8 @@ class ClaimMapperTest {
 
   @Test
   void shouldMapToClaim() {
+    ClaimEvidenceEntity claimEvidence =
+        ClaimEvidenceEntity.builder().id(EVIDENCE_ID_1).fileKey("fileKey1").fileSize(1000L).build();
     ClaimEntity claimEntity =
         ClaimEntity.builder()
             .id(CLAIM_ID)
@@ -105,6 +108,7 @@ class ClaimMapperTest {
             .escaped(ESCAPED)
             .counselPayment(COUNSEL_PAYMENT)
             .claimed(CLAIMED)
+            .evidence(List.of(claimEvidence))
             .build();
 
     Claim result = claimMapper.toClaim(claimEntity);
@@ -119,5 +123,6 @@ class ClaimMapperTest {
     assertThat(result.getEscaped()).isEqualTo(ESCAPED);
     assertThat(result.getCounselPayment()).isEqualTo(COUNSEL_PAYMENT);
     assertThat(result.getClaimed()).isEqualTo(CLAIMED);
+    assertThat(result.getEvidence()).hasSize(1);
   }
 }

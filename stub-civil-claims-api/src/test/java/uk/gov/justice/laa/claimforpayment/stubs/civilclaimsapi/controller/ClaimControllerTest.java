@@ -159,7 +159,7 @@ class ClaimControllerTest {
                 .escaped(true)
                 .counselPayment("Paid and Reconciled")
                 .lineItems(List.of(lineItem1, lineItem2))
-                .evidenceItems(List.of(claimEvidence1, claimEvidence2, claimEvidence3))
+                .evidence(List.of(claimEvidence1, claimEvidence2, claimEvidence3))
                 .build());
 
     mockMvc

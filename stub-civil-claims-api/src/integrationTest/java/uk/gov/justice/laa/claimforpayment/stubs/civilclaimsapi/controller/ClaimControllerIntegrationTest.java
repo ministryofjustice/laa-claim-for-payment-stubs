@@ -131,7 +131,8 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileSize").value(5000000))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].id").value(2))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileKey").value("amoto-invoice-002.pdf"))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileSize").value(4000000));
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileSize").value(4000000))
+        .andExpect(jsonPath("$.evidence", hasSize(2)));
   }
 
   @Test

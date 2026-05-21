@@ -254,9 +254,12 @@ class ClaimControllerIntegrationTest {
 
   @Test
   void addEvidenceToLineItem_returnsNoContentStatus() throws Exception {
+    String requestBody = "[1]";
     mockMvc
         .perform(
-            post("/api/v1/claims/3/line-items/2/evidence/1")
+            post("/api/v1/claims/3/line-items/2/evidence")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
@@ -280,28 +283,31 @@ class ClaimControllerIntegrationTest {
 
   @Test
   void addMultipleEvidenceToLineItem_returnsNoContentStatus() throws Exception {
+    String requestBody = "[1,2]";
     mockMvc
-      .perform(
-        post("/api/v1/claims/3/line-items/2/evidence/1,2")
-          .with(
-            jwt()
-              .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-              .authorities(() -> "SCOPE_" + claimsWriteScope)))
-      .andExpect(status().isNoContent());
+        .perform(
+            post("/api/v1/claims/3/line-items/2/evidence")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNoContent());
 
     mockMvc
-      .perform(
-        get("/api/v1/claims/{claimId}", 3)
-          .with(
-            jwt()
-              .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-              .authorities(() -> "SCOPE_" + claimsWriteScope)))
-      .andExpect(status().isOk())
-      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-      .andExpect(jsonPath("$.id").value(3))
-      .andExpect(jsonPath("$.lineItems", hasSize(7)))
-      .andDo(print())
-      .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)));
+        .perform(
+            get("/api/v1/claims/{claimId}", 3)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(3))
+        .andExpect(jsonPath("$.lineItems", hasSize(7)))
+        .andDo(print())
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)));
   }
 
   private String xAuthTokenWithUserId(String userId) {

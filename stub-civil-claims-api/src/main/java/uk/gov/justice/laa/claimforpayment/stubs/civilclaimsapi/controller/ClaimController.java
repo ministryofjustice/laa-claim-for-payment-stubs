@@ -316,14 +316,14 @@ public class ClaimController {
             description = "Evidence linked to line item successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
       })
-  @PostMapping("/{claimId}/line-items/{lineItemId}/evidence/{evidenceIds}")
+  @PostMapping("/{claimId}/line-items/{lineItemId}/evidence")
   public ResponseEntity<Void> addEvidenceToLineItem(
       @Parameter(description = "ID of the claim the line item belongs to", required = true)
           @PathVariable
           Long claimId,
       @Parameter(description = "ID of the line item to update", required = true) @PathVariable
           Long lineItemId,
-      @Parameter(description = "ID of the evidence to link", required = true) @PathVariable
+      @Parameter(description = "ID of the evidence to link", required = true) @Valid @RequestBody
           List<Long> evidenceIds) {
 
     log.debug(

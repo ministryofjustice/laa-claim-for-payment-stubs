@@ -137,9 +137,6 @@ public class ClaimsSeeder {
 
       for (ClaimEvidenceRow e : file.claim_evidence) {
         String key = e.claimUfn + "|" + e.client;
-        log.info("*******");
-        log.info(key);
-        log.info("Map: {}", claimIds);
         ps.setLong(1, claimIds.get(key));
         ps.setString(2, e.fileIdString);
         ps.setLong(3, e.fileSize);

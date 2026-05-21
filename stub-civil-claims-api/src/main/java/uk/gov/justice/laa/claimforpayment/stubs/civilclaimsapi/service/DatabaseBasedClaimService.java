@@ -169,7 +169,7 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     ClaimEntity claimEntity = checkIfClaimExist(claimId);
     LineItemEntity lineItemEntity = checkIfLineItemExist(lineItemId);
     List<ClaimEvidenceEntity> evidenceEntities = evidenceIds.stream().map(
-      this::checkIfClaimEvidenceExists).toList();
+        this::checkIfClaimEvidenceExists).toList();
 
     if (!lineItemEntity.getClaim().getId().equals(claimEntity.getId())) {
       throw new LineItemNotFoundException(

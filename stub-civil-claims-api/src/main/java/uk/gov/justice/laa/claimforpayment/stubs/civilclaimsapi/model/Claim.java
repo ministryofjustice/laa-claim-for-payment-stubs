@@ -33,7 +33,7 @@ public class Claim implements Serializable {
 
   @JsonProperty("evidence")
   @Schema(description = "evidence associated with the claim")
-  private List<ClaimEvidence> evidenceItems;
+  private List<ClaimEvidence> evidence;
 
   @Schema(description = "universal file number")
   @JsonProperty("ufn")

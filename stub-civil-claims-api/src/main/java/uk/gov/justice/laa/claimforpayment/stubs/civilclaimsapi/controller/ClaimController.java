@@ -323,7 +323,7 @@ public class ClaimController {
           Long claimId,
       @Parameter(description = "ID of the line item to update", required = true) @PathVariable
           Long lineItemId,
-      @Parameter(description = "ID of the evidence to link", required = true) @Valid @RequestBody
+      @Parameter(description = "IDs of the evidence to link", required = true) @Valid @RequestBody
           List<Long> evidenceIds) {
 
     log.debug(

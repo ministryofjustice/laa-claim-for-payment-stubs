@@ -14,10 +14,10 @@ test {
 }
 
 integrationTest {
-    // testLogging {
-    //     events "passed", "skipped", "failed", "standard_out", "standard_error"
-    //     showStandardStreams = true
-    // }
+    testLogging {
+        events "passed", "skipped", "failed", "standard_out", "standard_error"
+        showStandardStreams = true
+    }
 }
 
 jacocoTestReport {
@@ -46,18 +46,21 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.18'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.22'
     implementation 'org.apache.commons:commons-lang3:3.20.0'
     implementation 'org.mapstruct:mapstruct:1.6.3'
+
+    implementation project(":authx-secondary")
+
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
 
     runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.postgresql:postgresql:42.7.11'
     implementation "org.flywaydb:flyway-core"
     implementation "org.flywaydb:flyway-database-postgresql"
-
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'

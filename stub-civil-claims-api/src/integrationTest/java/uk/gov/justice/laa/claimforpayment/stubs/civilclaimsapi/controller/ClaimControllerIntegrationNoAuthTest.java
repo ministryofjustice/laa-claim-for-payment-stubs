@@ -13,18 +13,25 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.CivilClaimsStubApplication;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.config.TestJwtConfig;
 
 @SpringBootTest(classes = CivilClaimsStubApplication.class, properties = "security.enabled=false")
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
+@Import({TestJwtConfig.class})
 class ClaimControllerIntegrationNoAuthTest {
 
   @Autowired private MockMvc mockMvc;
-  
+  @MockitoBean private JwtDecoder jwtDecoder;
 
   @Test
   void shouldGetAllClaimsForUser() throws Exception {
@@ -47,6 +54,8 @@ class ClaimControllerIntegrationNoAuthTest {
         .andExpect(jsonPath("$.category").value("Family"))
         .andExpect(jsonPath("$.concluded").value("2025-03-18"))
         .andExpect(jsonPath("$.feeType").value("Escape"))
+        .andExpect(jsonPath("$.escaped").value(false))
+        .andExpect(jsonPath("$.counselPayment").value("Paid and Reconciled"))
         .andExpect(jsonPath("$.claimed").value(234.56));
   }
 
@@ -60,6 +69,8 @@ class ClaimControllerIntegrationNoAuthTest {
           "category": "Family",
           "concluded": "2025-07-09",
           "feeType": "Hourly",
+          "escaped": false,
+          "counselPayment": "Paid and Reconciled",
           "claimed": 123.45
         }
         """;
@@ -83,6 +94,8 @@ class ClaimControllerIntegrationNoAuthTest {
           "category": "Immigration and Asylum",
           "concluded": "2025-07-10",
           "feeType": "Fixed",
+          "escaped": false,
+          "counselPayment": "Paid and Reconciled",
           "claimed": 999.99
         }
         """;

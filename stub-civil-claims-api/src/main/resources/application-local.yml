@@ -14,5 +14,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081
-  flyway.locations: classpath:db/migration,classpath:db/local
+          issuer-uri: http://localhost:8091
+
+app:
+  security:
+    authorities:
+      claims-write: https://civil-claims-api/data_read

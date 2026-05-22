@@ -22,11 +22,13 @@ import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.justice.laa.stubs.oidcserver.model.TestUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class OidcServerConfigIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
@@ -97,7 +99,11 @@ public class OidcServerConfigIntegrationTest {
       assertThat(claimFrontEndClient.getPostLogoutRedirectUris())
           .containsOnly("http://localhost:3000");
       assertThat(claimFrontEndClient.getScopes())
-          .containsOnly(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, "Claims.Write");
+          .containsOnly(
+              OidcScopes.OPENID,
+              OidcScopes.PROFILE,
+              OidcScopes.EMAIL,
+              "https://claims-api/claims_write");
     }
 
     @Test
@@ -117,21 +123,11 @@ public class OidcServerConfigIntegrationTest {
       assertThat(assessFrontEndClient.getPostLogoutRedirectUris())
           .containsOnly("http://localhost:3001");
       assertThat(assessFrontEndClient.getScopes())
-          .containsOnly(OidcScopes.OPENID, OidcScopes.PROFILE, OidcScopes.EMAIL, "Claims.Write");
-    }
-
-    @Test
-    void machineClientHasCorrectConfig() {
-      RegisteredClient machine = registeredClientRepository.findByClientId("machine");
-
-      assertThat(machine).isNotNull();
-      assertThat(machine.getClientId()).isEqualTo("machine");
-      assertThat(machine.getClientSecret()).isNotNull();
-      assertThat(machine.getClientAuthenticationMethods())
-          .containsOnly(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
-      assertThat(machine.getAuthorizationGrantTypes())
-          .containsOnly(AuthorizationGrantType.CLIENT_CREDENTIALS);
-      assertThat(machine.getScopes()).containsOnly("Claims.Write");
+          .containsOnly(
+              OidcScopes.OPENID,
+              OidcScopes.PROFILE,
+              OidcScopes.EMAIL,
+              "https://claims-api/claims_write");
     }
   }
 

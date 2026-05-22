@@ -1,10 +1,6 @@
 # Specify java runtime base image
 FROM amazoncorretto:25-alpine
 
-RUN apk update \
- && apk upgrade --no-cache \
- && rm -rf /var/cache/apk/*
-
 # Set up working directory in the container
 RUN mkdir -p /opt/stub-civil-claims-api/
 WORKDIR /opt/stub-civil-claims-api/

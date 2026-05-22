@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @ConditionalOnProperty(name = "security.enabled", havingValue = "false")
 public class NoAuthSecurityConfig {
 
+  @Value("${app.security.authorities.claims-write}")
+  private String claimsWriteScope;
+
   private static final org.slf4j.Logger log =
       org.slf4j.LoggerFactory.getLogger(NoAuthSecurityConfig.class);
 
@@ -47,13 +51,7 @@ public class NoAuthSecurityConfig {
             (request, response, chain) -> {
               // build a fake Jwt with default providerUserId
               Map<String, Object> claims =
-                  Map.of(
-                      "USER_NAME",
-                      DEFAULT_PROVIDER_ID.toString(),
-                      "scope",
-                      "Claims.Write" // to satisfy
-                      // @PreAuthorize("hasAuthority('SCOPE_Claims.Write')")
-                      );
+                  Map.of("USER_NAME", DEFAULT_PROVIDER_ID.toString(), "scope", claimsWriteScope);
 
               Jwt jwt =
                   new Jwt(
@@ -65,7 +63,7 @@ public class NoAuthSecurityConfig {
 
               AbstractAuthenticationToken authToken =
                   new JwtAuthenticationToken(
-                      jwt, List.of(new SimpleGrantedAuthority("SCOPE_Claims.Write")));
+                      jwt, List.of(new SimpleGrantedAuthority("SCOPE_" + claimsWriteScope)));
 
               SecurityContextHolder.getContext().setAuthentication(authToken);
               chain.doFilter(request, response);

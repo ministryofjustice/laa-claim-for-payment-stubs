@@ -1,0 +1,22 @@
+security:
+  enabled: false 
+logging:
+  level:
+    root: DEBUG
+    # org.flywaydb: TRACE
+    # This shows Spring Boot's decision to start Flyway
+    # org.springframework.boot.autoconfigure.flyway: TRACE
+spring:
+  h2:
+    console:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081
+
+app:
+  security:
+    authorities:
+      claims-write: https://claims-api/claims_write

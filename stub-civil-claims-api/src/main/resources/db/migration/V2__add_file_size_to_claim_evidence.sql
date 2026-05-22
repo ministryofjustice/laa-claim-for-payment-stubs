@@ -1,0 +1,2 @@
+ALTER TABLE claim_evidence
+ADD file_size BIGINT NOT NULL DEFAULT 0;

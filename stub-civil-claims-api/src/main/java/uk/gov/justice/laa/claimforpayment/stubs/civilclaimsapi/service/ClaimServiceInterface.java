@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidenceRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.LineItemRequestBody;
 
 /** An interface to some method of managing claims. */
 public interface ClaimServiceInterface {
@@ -56,4 +58,10 @@ public interface ClaimServiceInterface {
    * @return a list of submissions for the provider user
    */
   Page<Claim> getAllClaimsForProvider(UUID providerUserId, int pageNumber, int pageSize);
+
+  Long addLineItemToClaim(Long claimId, LineItemRequestBody lineItem);
+
+  Long addEvidenceToClaim(Long claimId, ClaimEvidenceRequestBody requestBody);
+
+  void linkEvidenceToLineItem(Long claimId, Long lineItemId, List<Long> evidenceIds);
 }

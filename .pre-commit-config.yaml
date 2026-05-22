@@ -12,14 +12,14 @@ repos:
         name: Snyk dependency scan
         entry: snyk
         language: system
-        args: [ "test","--all-sub-projects","--severity-threshold=high"  ]
+        args: [ "test","--all-sub-projects","--severity-threshold=high" ,"--policy-path=.snyk" ]
         pass_filenames: false
 
       - id: snyk-code-scan
         name: Snyk code scan
         entry: snyk
         language: system
-        args: [ "code", "test", "--severity-threshold=high" ,"--all-sub-projects"]
+        args: [ "code", "test", "--severity-threshold=high" ,"--all-sub-projects","--policy-path=.snyk"]
         pass_filenames: false
   - repo: https://github.com/ministryofjustice/devsecops-hooks
     rev: v1.4.1

@@ -1,5 +1,5 @@
 # Specify java runtime base image
-FROM amazoncorretto:21-alpine
+FROM amazoncorretto:25-alpine
 
 # Set up working directory in the container
 RUN mkdir -p /opt/stub-civil-claims-api/
@@ -18,4 +18,4 @@ USER 1001
 EXPOSE 7080
 
 # Run the JAR file
-CMD java -jar app.jar
+CMD ["java", "-jar", "app.jar"]

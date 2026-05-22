@@ -20,19 +20,23 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    cooldown:
+      default-days: 7
     registries: "*"
     groups:
       gradle-updates:
         exclude-patterns:
-          - "uk.gov.laa.springboot.microservice.*"
+          - "uk.gov.justice.laa.claimforpayment.*"
       internal-packages:
         patterns:
-          - "uk.gov.laa.springboot.microservice*"
+          - "uk.gov.justice.laa.claimforpayment*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns:

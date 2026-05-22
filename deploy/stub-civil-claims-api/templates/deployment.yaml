@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "stubs-civil-claims-api.fullname" . }}
+  name: {{ include "stub-civil-claims-api.fullname" . }}
   labels:
-    {{- include "stubs-civil-claims-api.labels" . | nindent 4 }}
+    {{- include "stub-civil-claims-api.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "stubs-civil-claims-api.selectorLabels" . | nindent 6 }}
+      {{- include "stub-civil-claims-api.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "stubs-civil-claims-api.labels" . | nindent 8 }}
+        {{- include "stub-civil-claims-api.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -109,26 +109,26 @@ spec:
                 secretKeyRef:
                   name: {{ required "postgres.secretName is required when postgres.enabled=true" .Values.postgres.secretName }}
                   key: database_password
-            - name: DB_SSLMODE
-              value: {{ .Values.postgres.sslmode | default "require" | quote }}
             - name: ISSUER_BASE_URL
-              {{- if kindIs "map" .Values.env.ISSUER_BASE_URL }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.env.ISSUER_BASE_URL.name }}
                   key: {{ .Values.env.ISSUER_BASE_URL.key }}
-              {{- else }}
-              value: "{{ .Values.env.ISSUER_BASE_URL }}"
-              {{- end }}   
             - name: AUDIENCE
-              {{- if kindIs "map" .Values.env.AUDIENCE }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.env.AUDIENCE.name }}
                   key: {{ .Values.env.AUDIENCE.key }}
-              {{- else }}
-              value: "{{ .Values.env.AUDIENCE }}"
-              {{- end }} 
+            - name: DB_SSLMODE
+              value: {{ .Values.postgres.sslmode | default "require" | quote }}
+            - name: ALLOWED_AUDIENCES
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.env.ALLOWED_AUDIENCES.name }}
+                  key: {{ .Values.env.ALLOWED_AUDIENCES.key }}
+            - name: DB_SSLMODE
+              value: {{ .Values.postgres.sslmode | default "require" | quote }}
+
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

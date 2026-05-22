@@ -1,21 +1,15 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
 version: v1.25.1
-
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
-  SNYK-JAVA-TOOLSJACKSONCORE-15365915:
-    - '*':
-        reason: requires spring upgrade not available
-        expires: '2026-06-01T00:00:00.000Z'
-        created: '2026-03-03T08:47:56.915Z'
-  SNYK-JAVA-COMFASTERXMLJACKSONCORE-15365924:
+  SNYK-JAVA-TOOLSJACKSONCORE-15907550:
     - '*':
         reason: requires spring upgrade ny availalbe
         expires: 2026-06-01T00:00:00.000Z
         created: 2026-03-03T09:16:35.779Z
-  SNYK-JAVA-TOOLSJACKSONCORE-15371178:
+  SNYK-JAVA-ORGAPACHECOMMONS-10734078:
     - '*':
-        reason: requires spring upgrade ny availalbe
-        expires: 2026-06-01T00:00:00.000Z
-        created: 2026-03-03T09:16:35.779Z
+        reason: this is a doxia dependency waiting for checkstyle to merge, not used at runtime
+        expires: 2026-08-01T00:00:00.000Z
+        created: 2026-04-27T09:16:35.779Z
 patch: {}

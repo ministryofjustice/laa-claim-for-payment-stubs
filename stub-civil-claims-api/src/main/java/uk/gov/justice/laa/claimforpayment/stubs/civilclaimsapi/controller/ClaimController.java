@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -32,10 +34,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.AddClaimEvidenceResponse;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.AddLineItemResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidenceRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimPageResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.CreateClaimResponse;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.LineItemRequestBody;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.service.ClaimServiceInterface;
 
 /** REST controller for managing claims. */
@@ -85,9 +91,7 @@ public class ClaimController {
 
     Long claimId = claimService.createClaim(requestBody, providerUserId);
     URI location = URI.create("/api/v1/claims/" + claimId);
-    return ResponseEntity
-    .created(location)
-    .body(new CreateClaimResponse(claimId));
+    return ResponseEntity.created(location).body(new CreateClaimResponse(claimId));
   }
 
   /**
@@ -103,7 +107,8 @@ public class ClaimController {
             description = "Paged list of claims linked to a provider user",
             content = @Content(schema = @Schema(implementation = ClaimPageResponse.class)))
       })
-  @PreAuthorize("hasAuthority('SCOPE_Claims.Write')")
+  @PreAuthorize(
+      "hasAuthority('SCOPE_' + @environment.getProperty('app.security.authorities.claims-write'))")
   @GetMapping
   public ResponseEntity<ClaimPageResponse> getClaims(
       @RequestParam(defaultValue = "0") int page,
@@ -119,9 +124,19 @@ public class ClaimController {
 
     Page<Claim> claims = claimService.getAllClaimsForProvider(providerUserId, page, limit);
 
-    return ResponseEntity.ok(
-        new ClaimPageResponse(
-            claims.toList(), page, limit, claims.getTotalElements(), claims.getTotalPages()));
+    ClaimPageResponse response;
+
+    if (claims == null || claims.isEmpty()) {
+      log.debug("No claims found for provider user " + providerUserId);
+      response = new ClaimPageResponse(List.of(), page, limit, 0, 0);
+    } else {
+      log.debug(
+          "Found {} claims for provider user {}", claims.getNumberOfElements(), providerUserId);
+      response =
+          new ClaimPageResponse(
+              claims.toList(), page, limit, claims.getTotalElements(), claims.getTotalPages());
+    }
+    return ResponseEntity.ok(response);
   }
 
   /**
@@ -203,6 +218,122 @@ public class ClaimController {
       log.debug("Claim not found for ID {}: {}", claimId, e.getMessage());
       return ResponseEntity.notFound().build();
     }
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
+   * Adds a line item to an existing claim.
+   *
+   * @param claimId the ID of the claim to update
+   * @param requestBody the line item data to add to the claim
+   * @return a response entity with no content if the line item is added successfully
+   */
+  @Operation(summary = "Add a line item to a claim")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Line item added to claim successfully",
+            headers =
+                @Header(
+                    name = "Location",
+                    description = "URI of the created line item resource",
+                    schema =
+                        @Schema(type = "string", example = "/api/v1/claims/123/line-items/456")),
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AddLineItemResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
+      })
+  @PatchMapping("/{claimId}/line-items")
+  public ResponseEntity<AddLineItemResponse> addLineItemToClaim(
+      @Parameter(description = "ID of the claim to update", required = true) @PathVariable
+          Long claimId,
+      @Parameter(description = "line item data", required = true) @Valid @RequestBody
+          LineItemRequestBody requestBody) {
+
+    log.debug("Adding new line item to claim with ID: {}", claimId);
+
+    Long lineItemId = claimService.addLineItemToClaim(claimId, requestBody);
+
+    URI location = URI.create("/api/v1/claims/" + claimId + "/line-items/" + lineItemId);
+    return ResponseEntity.created(location).body(new AddLineItemResponse(lineItemId));
+  }
+
+  /**
+   * Adds evidence to an existing claim.
+   *
+   * @param claimId the ID of the claim to update
+   * @param requestBody the evidence data to add to the claim
+   * @return a response entity with no content if the evidence is added successfully
+   */
+  @Operation(summary = "Add evidence to a claim")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Evidence added to claim successfully",
+            headers =
+                @Header(
+                    name = "Location",
+                    description = "URI of the created evidence resource",
+                    schema = @Schema(type = "string", example = "/api/v1/claims/123/evidence/456")),
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AddClaimEvidenceResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
+      })
+  @PatchMapping("/{claimId}/evidence")
+  public ResponseEntity<AddClaimEvidenceResponse> addEvidenceToClaim(
+      @Parameter(description = "ID of the claim to update", required = true) @PathVariable
+          Long claimId,
+      @Parameter(description = "evidence data", required = true) @Valid @RequestBody
+          ClaimEvidenceRequestBody requestBody) {
+
+    log.debug("Adding new evidence to claim with ID: {}", claimId);
+
+    Long evidenceId = claimService.addEvidenceToClaim(claimId, requestBody);
+
+    URI location = URI.create("/api/v1/claims/" + claimId + "/evidence/" + evidenceId);
+    return ResponseEntity.created(location).body(new AddClaimEvidenceResponse(evidenceId));
+  }
+
+  /**
+   * Adds existing evidence to an existing line item in a claim.
+   *
+   * @param claimId the ID of the claim to update
+   * @param lineItemId the ID of the line item to update
+   * @param evidenceIds the IDs of the evidence to link to the line item
+   * @return a response entity with no content if the evidence is added successfully
+   */
+  @Operation(summary = "Add existing evidence to a line item in a claim")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Evidence linked to line item successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content)
+      })
+  @PostMapping("/{claimId}/line-items/{lineItemId}/evidence")
+  public ResponseEntity<Void> addEvidenceToLineItem(
+      @Parameter(description = "ID of the claim the line item belongs to", required = true)
+          @PathVariable
+          Long claimId,
+      @Parameter(description = "ID of the line item to update", required = true) @PathVariable
+          Long lineItemId,
+      @Parameter(description = "IDs of the evidence to link", required = true) @Valid @RequestBody
+          List<Long> evidenceIds) {
+
+    log.debug(
+        "Adding existing evidence with ID:{} to line item with ID:{} on claim with ID: {}",
+        evidenceIds,
+        lineItemId,
+        claimId);
+
+    claimService.linkEvidenceToLineItem(claimId, lineItemId, evidenceIds);
+
     return ResponseEntity.noContent().build();
   }
 }

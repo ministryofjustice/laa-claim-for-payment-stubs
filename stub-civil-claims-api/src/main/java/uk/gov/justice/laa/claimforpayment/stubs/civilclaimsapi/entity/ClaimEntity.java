@@ -1,13 +1,17 @@
 package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,9 +44,23 @@ public class ClaimEntity {
   @Column(name = "fee_type")
   private String feeType;
 
+  @Column(name = "escaped")
+  private Boolean escaped;
+
+  @Column(name = "counsel_payment")
+  private String counselPayment;
+
   @Column(name = "claimed", nullable = false, precision = 10, scale = 2)
   private BigDecimal claimed;
 
   @Column(name = "submission_id")
   private UUID submissionId;
+
+  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private List<LineItemEntity> lineItems = new ArrayList<>();
+
+  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private List<ClaimEvidenceEntity> evidence = new ArrayList<>();
 }

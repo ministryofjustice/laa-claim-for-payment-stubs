@@ -1,0 +1,41 @@
+logging:
+  level:
+    root: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2.server.authorization: TRACE
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.oauth2.server.authorization.client: DEBUG
+    org.springframework.security.oauth2.server.authorization.web.authentication.AuthorizationCodeRequestValidatingFilter: TRACE
+    org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationEndpointFilter: TRACE
+    org.springframework.security.oauth2.server.authorization.web: TRACE
+    org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService: TRACE
+    org.springframework.security.oauth2.server.authorization.authentication: TRACE
+    org.springframework.security.web.util.matcher: TRACE
+    org.springframework.security.web.savedrequest: TRACE
+    org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeRequestAuthenticationConverter: TRACE
+    org.springframework.security.oauth2.server.authorization.web.authentication: TRACE
+
+spring:
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          caa-client:
+            settings:
+              client:
+                require-proof-key: false 
+            registration:    
+              redirect-uris: ["http://localhost:3000/callback"]
+              post-logout-redirect-uris: ["http://localhost:3000"]
+          afe-client:
+            settings:
+              client:
+                require-proof-key: false
+            registration:  
+              redirect-uris: ["http://localhost:3001/callback"]
+              post-logout-redirect-uris: ["http://localhost:3001"]   
+
+auth:
+  mock:
+    issuer: http://localhost:8091
+

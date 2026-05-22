@@ -1,4 +1,4 @@
-# Default values for stubs-civil-claims-api.
+# Default values for stub-civil-claims-api.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -45,17 +45,17 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 8090
 
 ingress:
   enabled: true
   hosts:
-    - host: laa-claim-for-payment-stubs-staging.cloud-platform.service.justice.gov.uk
+    - host: laa-claim-for-payment-stubs-civil-claims-api-staging.cloud-platform.service.justice.gov.uk
       paths:
         - path: /
           pathType: Prefix
   annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: "stubs-civil-claims-api-laa-claim-for-payment-stubs-staging-green"
+    external-dns.alpha.kubernetes.io/set-identifier: "stub-civil-claims-api-laa-claim-for-payment-stubs-staging-green"
     external-dns.alpha.kubernetes.io/aws-weight: "100"
 
 resources:
@@ -86,7 +86,11 @@ env:
     key: issuer-url
   AUDIENCE:
     name: auth-secret-staging
-    key: application-id  
+    key: application-id 
+  ALLOWED_AUDIENCES:
+    name: auth-secret-staging
+    key: allowed-audiences
+
   
 springProfilesActive: "staging"
 

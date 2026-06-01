@@ -222,6 +222,9 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     checkIfLineItemExistsForClaim(lineItemEntity, claimEntity);
     List<ClaimEvidenceEntity> evidenceEntities = evidenceIds.stream().map(
         this::checkIfEvidenceExists).toList();
+    evidenceEntities.forEach(
+        evidenceEntity -> checkIfEvidenceExistsForClaim(evidenceEntity, claimEntity)
+    );
     lineItemEntity.getEvidenceItems().addAll(evidenceEntities);
     lineItemRepository.save(lineItemEntity);
   }

@@ -605,6 +605,47 @@ class DatabaseBasedClaimServiceTest {
   }
 
   @Test
+  void shouldFailToLinkEvidenceToLineItemWhenEvidenceIsNotAlreadyUploadedToClaim() {
+
+    ClaimEntity claimEntity1 =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEntity claimEntity2 =
+        ClaimEntity.builder()
+            .id(2L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity1).build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity2).build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity1));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    assertThrows(ClaimEvidenceNotFoundException.class, () -> claimService.linkEvidenceToLineItem(1L, 1L, List.of(1L)));
+  }
+
+  @Test
   void shouldLinkMultipleEvidenceToLineItem() {
 
     ClaimEntity claimEntity =

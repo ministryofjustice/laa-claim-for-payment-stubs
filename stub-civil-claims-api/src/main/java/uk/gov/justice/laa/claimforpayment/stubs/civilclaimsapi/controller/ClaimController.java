@@ -296,7 +296,7 @@ public class ClaimController {
    * @param evidenceId the ID of the evidence to delete from the claim
    * @return a response entity with no content if the evidence is deleted successfully
    */
-  @Operation(summary = "Unlink evidence from a line item in a claim")
+  @Operation(summary = "Delete evidence from a claim")
   @ApiResponses(
       value = {
           @ApiResponse(responseCode = "204", description = "Evidence deleted successfully"),
@@ -358,7 +358,7 @@ public class ClaimController {
   }
 
   /**
-   * Adds existing evidence to an existing line item in a claim.
+   * Unlinks evidence from a line item in a claim.
    *
    * @param claimId the ID of the claim to update
    * @param lineItemId the ID of the line item to update

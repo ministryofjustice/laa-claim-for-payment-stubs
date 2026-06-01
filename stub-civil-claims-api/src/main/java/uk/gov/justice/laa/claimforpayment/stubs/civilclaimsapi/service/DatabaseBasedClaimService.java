@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEvidenceEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.LineItemEntity;
@@ -162,6 +163,24 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     newEvidenceEntity.setClaim(claimEntity);
     ClaimEvidenceEntity savedEvidence = claimEvidenceRepository.save(newEvidenceEntity);
     return savedEvidence.getId();
+  }
+
+  @Override
+  @Transactional
+  public void deleteEvidenceFromClaim(Long claimId, Long evidenceId) {
+    ClaimEntity claimEntity = checkIfClaimExist(claimId);
+    ClaimEvidenceEntity evidenceEntity = checkIfClaimEvidenceExists(evidenceId);
+    if (!evidenceEntity.getClaim().getId().equals(claimEntity.getId())) {
+      throw new ClaimEvidenceNotFoundException(
+          String.format(
+              "Evidence with id: %s has not been uploaded to claim with id: %s",
+              evidenceEntity, claimId));
+    }
+    for (LineItemEntity lineItemEntity : claimEntity.getLineItems()) {
+      lineItemEntity.getEvidenceItems().remove(evidenceEntity);
+    }
+    claimEntity.getEvidence().remove(evidenceEntity);
+    claimEvidenceRepository.deleteById(evidenceId);
   }
 
   @Override

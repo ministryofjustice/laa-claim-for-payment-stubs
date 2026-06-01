@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -452,6 +453,125 @@ class DatabaseBasedClaimServiceTest {
     Long result = claimService.addLineItemToClaim(3L, lineItemRequestBody);
 
     assertThat(result).isNotNull().isEqualTo(3L);
+  }
+
+  @Test
+  void shouldDeleteEvidenceFromClaim() {
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity).build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity).build();
+
+    Set<ClaimEvidenceEntity> claimEvidenceEntities = new HashSet<>();
+    claimEvidenceEntities.add(claimEvidenceEntity);
+    lineItemEntity.setEvidenceItems(claimEvidenceEntities);
+
+    List<LineItemEntity> lineItemEntities = new ArrayList<>();
+    lineItemEntities.add(lineItemEntity);
+    claimEntity.setLineItems(lineItemEntities);
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    claimService.deleteEvidenceFromClaim(1L, 1L);
+
+    assertThat(claimEntity.getEvidence()).hasSize(0);
+    assertThat(lineItemEntity.getEvidenceItems()).hasSize(0);
+  }
+
+  @Test
+  void shouldFailToDeleteEvidenceFromClaimWhenClaimNotFound() {
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClaimNotFoundException.class, () -> claimService.deleteEvidenceFromClaim(1L, 1L));
+  }
+
+  @Test
+  void shouldFailToDeleteEvidenceFromClaimWhenEvidenceNotFound() {
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClaimEvidenceNotFoundException.class, () -> claimService.deleteEvidenceFromClaim(1L, 1L));
+  }
+
+  @Test
+  void shouldFailToDeleteEvidenceFromClaimWhenEvidenceIsNotAlreadyUploadedToClaim() {
+
+    ClaimEntity claimEntity1 =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEntity claimEntity2 =
+        ClaimEntity.builder()
+            .id(2L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity2).build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity2).build();
+
+    Set<ClaimEvidenceEntity> claimEvidenceEntities = new HashSet<>();
+    claimEvidenceEntities.add(claimEvidenceEntity);
+    lineItemEntity.setEvidenceItems(claimEvidenceEntities);
+
+    List<LineItemEntity> lineItemEntities = new ArrayList<>();
+    lineItemEntities.add(lineItemEntity);
+    claimEntity2.setLineItems(lineItemEntities);
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity1));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    assertThrows(
+        ClaimEvidenceNotFoundException.class, () -> claimService.deleteEvidenceFromClaim(1L, 1L));
   }
 
   @Test

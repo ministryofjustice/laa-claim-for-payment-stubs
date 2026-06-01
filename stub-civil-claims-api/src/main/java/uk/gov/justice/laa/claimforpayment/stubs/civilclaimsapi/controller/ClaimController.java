@@ -290,6 +290,37 @@ public class ClaimController {
   }
 
   /**
+   * Deletes evidence from a claim.
+   *
+   * @param claimId the ID of the claim to update
+   * @param evidenceId the ID of the evidence to delete from the claim
+   * @return a response entity with no content if the evidence is deleted successfully
+   */
+  @Operation(summary = "Unlink evidence from a line item in a claim")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "204", description = "Evidence deleted successfully"),
+          @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
+      })
+  @DeleteMapping("/{claimId}/evidence/{evidenceId}")
+  public ResponseEntity<Void> deleteEvidenceFromClaim(
+      @Parameter(description = "ID of the claim the evidence has been uploaded to", required = true)
+      @PathVariable Long claimId,
+      @Parameter(description = "ID of the evidence to delete", required = true)
+      @PathVariable
+      Long evidenceId) {
+
+    log.debug(
+        "Deleting evidence with ID: {} from claim with ID: {}",
+        evidenceId,
+        claimId);
+
+    claimService.deleteEvidenceFromClaim(claimId, evidenceId);
+
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
    * Adds existing evidence to an existing line item in a claim.
    *
    * @param claimId the ID of the claim to update
@@ -337,7 +368,7 @@ public class ClaimController {
   @Operation(summary = "Unlink evidence from a line item in a claim")
   @ApiResponses(
       value = {
-          @ApiResponse(responseCode = "204", description = "Claim deleted successfully"),
+          @ApiResponse(responseCode = "204", description = "Evidence unlinked successfully"),
           @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
       })
   @DeleteMapping("/{claimId}/line-items/{lineItemId}/evidence/{evidenceId}")

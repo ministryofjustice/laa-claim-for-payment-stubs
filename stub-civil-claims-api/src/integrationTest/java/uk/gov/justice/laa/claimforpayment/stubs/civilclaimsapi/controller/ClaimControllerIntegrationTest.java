@@ -278,7 +278,6 @@ class ClaimControllerIntegrationTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value(3))
         .andExpect(jsonPath("$.lineItems", hasSize(7)))
-        .andDo(print())
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)));
   }
 
@@ -307,8 +306,83 @@ class ClaimControllerIntegrationTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value(3))
         .andExpect(jsonPath("$.lineItems", hasSize(7)))
-        .andDo(print())
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)));
+  }
+
+  @Test
+  void unlinkEvidenceFromLineItem_returnsNoContentStatus() throws Exception {
+    int claimId = 2;
+
+    mockMvc
+        .perform(
+            get("/api/v1/claims/{claimId}", claimId)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(claimId))
+        .andExpect(jsonPath("$.lineItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)));
+
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/{claimId}/line-items/1/evidence/1", claimId)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get("/api/v1/claims/{claimId}", claimId)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(claimId))
+        .andExpect(jsonPath("$.lineItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)));
+  }
+
+  @Test
+  void unlinkEvidenceFromLineItem_returnsNotFoundStatusWhenClaimNotFound() throws Exception {
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/9999/line-items/1/evidence/1")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void unlinkEvidenceFromLineItem_returnsNotFoundStatusWhenLineItemNotFound() throws Exception {
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/2/line-items/9999/evidence/1")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void unlinkEvidenceFromLineItem_returnsNotFoundStatusWhenEvidenceNotFound() throws Exception {
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/2/line-items/1/evidence/9999")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNotFound());
   }
 
   private String xAuthTokenWithUserId(String userId) {

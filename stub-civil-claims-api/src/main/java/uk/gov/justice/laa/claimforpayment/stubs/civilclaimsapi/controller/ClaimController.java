@@ -184,12 +184,7 @@ public class ClaimController {
           ClaimRequestBody requestBody) {
 
     log.debug("Updating claim with ID: {}", id);
-    try {
-      claimService.updateClaim(id, requestBody);
-    } catch (ClaimNotFoundException e) {
-      log.debug("Claim not found for ID {}: {}", id, e.getMessage());
-      return ResponseEntity.notFound().build();
-    }
+    claimService.updateClaim(id, requestBody);
     return ResponseEntity.noContent().build();
   }
 
@@ -211,13 +206,7 @@ public class ClaimController {
           Long claimId) {
 
     log.debug("Deleting claim with ID: {}", claimId);
-    System.out.println("Deleting claim with claim id " + claimId);
-    try {
-      claimService.deleteClaim(claimId);
-    } catch (ClaimNotFoundException e) {
-      log.debug("Claim not found for ID {}: {}", claimId, e.getMessage());
-      return ResponseEntity.notFound().build();
-    }
+    claimService.deleteClaim(claimId);
     return ResponseEntity.noContent().build();
   }
 
@@ -327,12 +316,48 @@ public class ClaimController {
           List<Long> evidenceIds) {
 
     log.debug(
-        "Adding existing evidence with ID:{} to line item with ID:{} on claim with ID: {}",
+        "Adding existing evidence with ID: {} to line item with ID: {} on claim with ID: {}",
         evidenceIds,
         lineItemId,
         claimId);
 
     claimService.linkEvidenceToLineItem(claimId, lineItemId, evidenceIds);
+
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
+   * Adds existing evidence to an existing line item in a claim.
+   *
+   * @param claimId the ID of the claim to update
+   * @param lineItemId the ID of the line item to update
+   * @param evidenceId the ID of the evidence to unlink from the line item
+   * @return a response entity with no content if the evidence is unlinked successfully
+   */
+  @Operation(summary = "Unlink evidence from a line item in a claim")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "204", description = "Claim deleted successfully"),
+          @ApiResponse(responseCode = "404", description = "Claim not found", content = @Content)
+      })
+  @DeleteMapping("/{claimId}/line-items/{lineItemId}/evidence/{evidenceId}")
+  public ResponseEntity<Void> unlinkEvidenceFromLineItem(
+      @Parameter(description = "ID of the claim the line item belongs to", required = true)
+          @PathVariable Long claimId,
+      @Parameter(description = "ID of the line item the evidence is linked to", required = true)
+          @PathVariable
+          Long lineItemId,
+      @Parameter(description = "ID of the evidence to unlink", required = true)
+          @PathVariable
+          Long evidenceId) {
+
+    log.debug(
+        "Unlinking evidence with ID: {} from line item with ID: {} on claim with ID: {}",
+        evidenceId,
+        lineItemId,
+        claimId);
+
+    claimService.unlinkEvidenceFromLineItem(claimId, lineItemId, evidenceId);
 
     return ResponseEntity.noContent().build();
   }

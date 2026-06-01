@@ -179,4 +179,30 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     lineItemEntity.getEvidenceItems().addAll(evidenceEntities);
     lineItemRepository.save(lineItemEntity);
   }
+
+  @Override
+  public void unlinkEvidenceFromLineItem(Long claimId, Long lineItemId, Long evidenceId) {
+    ClaimEntity claimEntity = checkIfClaimExist(claimId);
+    LineItemEntity lineItemEntity = checkIfLineItemExist(lineItemId);
+    ClaimEvidenceEntity evidenceEntity = checkIfClaimEvidenceExists(evidenceId);
+
+    if (!lineItemEntity.getClaim().getId().equals(claimEntity.getId())) {
+      throw new LineItemNotFoundException(
+          String.format(
+              "Line item with id: %s does not belong to claim with id: %s", lineItemId, claimId));
+    }
+
+    if (!lineItemEntity.getEvidenceItems().stream()
+        .map(ClaimEvidenceEntity::getId)
+        .toList()
+        .contains(evidenceEntity.getId())) {
+      throw new ClaimEvidenceNotFoundException(
+          String.format(
+              "Evidence with id: %s does not belong to line item with id: %s",
+              evidenceEntity, lineItemId));
+    }
+
+    lineItemEntity.getEvidenceItems().remove(evidenceEntity);
+    lineItemRepository.save(lineItemEntity);
+  }
 }

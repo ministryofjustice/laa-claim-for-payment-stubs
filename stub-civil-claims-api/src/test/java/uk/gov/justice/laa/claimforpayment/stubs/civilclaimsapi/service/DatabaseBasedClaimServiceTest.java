@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,7 +26,9 @@ import org.springframework.data.domain.Pageable;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEvidenceEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.LineItemEntity;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimEvidenceNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.LineItemNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.mapper.ClaimMapper;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidence;
@@ -513,5 +516,169 @@ class DatabaseBasedClaimServiceTest {
     claimService.linkEvidenceToLineItem(1L, 1L, List.of(1L, 2L));
 
     assertThat(lineItemEntity.getEvidenceItems()).contains(claimEvidenceEntity1);
+  }
+
+  @Test
+  void shouldUnlinkEvidenceFromLineItem() {
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity).build();
+
+    Set<ClaimEvidenceEntity> claimEvidenceEntities = new HashSet<>();
+    claimEvidenceEntities.add(claimEvidenceEntity);
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity).evidenceItems(claimEvidenceEntities).build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    claimService.unlinkEvidenceFromLineItem(1L, 1L, 1L);
+
+    assertThat(lineItemEntity.getEvidenceItems()).hasSize(0);
+  }
+
+  @Test
+  void shouldFailToUnlinkEvidenceFromLineItemWhenClaimNotFound() {
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(ClaimNotFoundException.class, () -> claimService.unlinkEvidenceFromLineItem(1L, 1L, 1L));
+  }
+
+  @Test
+  void shouldFailToUnlinkEvidenceFromLineItemWhenLineItemNotFound() {
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(
+        LineItemNotFoundException.class, () -> claimService.unlinkEvidenceFromLineItem(1L, 1L, 1L));
+  }
+
+  @Test
+  void shouldFailToUnlinkEvidenceFromLineItemWhenEvidenceNotFound() {
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity).build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClaimEvidenceNotFoundException.class, () -> claimService.unlinkEvidenceFromLineItem(1L, 1L, 1L));
+  }
+
+  @Test
+  void shouldFailToUnlinkEvidenceFromLineItemWhenLineItemDoesNotBelongToClaim() {
+
+    ClaimEntity claimEntity1 =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEntity claimEntity2 =
+        ClaimEntity.builder()
+            .id(2L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity1).build();
+
+    Set<ClaimEvidenceEntity> claimEvidenceEntities = new HashSet<>();
+    claimEvidenceEntities.add(claimEvidenceEntity);
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity2).evidenceItems(claimEvidenceEntities).build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity1));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    assertThrows(
+        LineItemNotFoundException.class, () -> claimService.unlinkEvidenceFromLineItem(1L, 1L, 1L));
+  }
+
+  @Test
+  void shouldFailToUnlinkEvidenceFromLineItemWhenEvidenceIsNotAlreadyLinkedToLineItem() {
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity).build();
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity).build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    assertThrows(
+        ClaimEvidenceNotFoundException.class, () -> claimService.unlinkEvidenceFromLineItem(1L, 1L, 1L));
   }
 }

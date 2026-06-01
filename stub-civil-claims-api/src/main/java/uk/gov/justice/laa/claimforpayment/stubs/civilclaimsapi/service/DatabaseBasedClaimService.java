@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEvidenceEntity;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.LineItemEntity;
@@ -50,7 +51,7 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
    */
   @Override
   public Claim getClaim(Long claimId) {
-    ClaimEntity claimEntity = checkIfClaimExist(claimId);
+    ClaimEntity claimEntity = checkIfClaimExists(claimId);
     return claimMapper.toClaim(claimEntity);
   }
 
@@ -86,7 +87,7 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
    */
   @Override
   public void updateClaim(Long id, ClaimRequestBody claimRequestBody) {
-    ClaimEntity claimEntity = checkIfClaimExist(id);
+    ClaimEntity claimEntity = checkIfClaimExists(id);
     claimEntity.setUfn(claimRequestBody.getUfn());
     claimEntity.setClient(claimRequestBody.getClient());
     claimEntity.setCategory(claimRequestBody.getCategory());
@@ -105,18 +106,18 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
    */
   @Override
   public void deleteClaim(Long id) {
-    checkIfClaimExist(id);
+    checkIfClaimExists(id);
     claimRepository.deleteById(id);
   }
 
-  private ClaimEntity checkIfClaimExist(Long id) throws ClaimNotFoundException {
+  private ClaimEntity checkIfClaimExists(Long id) throws ClaimNotFoundException {
     return claimRepository
         .findById(id)
         .orElseThrow(
             () -> new ClaimNotFoundException(String.format("No claim found with id: %s", id)));
   }
 
-  private LineItemEntity checkIfLineItemExist(Long id) throws LineItemNotFoundException {
+  private LineItemEntity checkIfLineItemExists(Long id) throws LineItemNotFoundException {
     return lineItemRepository
         .findById(id)
         .orElseThrow(
@@ -124,7 +125,7 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
                 new LineItemNotFoundException(String.format("No line item found with id: %s", id)));
   }
 
-  private ClaimEvidenceEntity checkIfClaimEvidenceExists(Long id)
+  private ClaimEvidenceEntity checkIfEvidenceExists(Long id)
       throws ClaimEvidenceNotFoundException {
     return claimEvidenceRepository
         .findById(id)
@@ -132,6 +133,43 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
             () ->
                 new ClaimEvidenceNotFoundException(
                     String.format("No claim evidence found with id: %s", id)));
+  }
+
+  private void checkIfEvidenceExistsForClaim(
+      ClaimEvidenceEntity evidenceEntity, ClaimEntity claimEntity) throws ClaimNotFoundException {
+    Long claimId = claimEntity.getId();
+    if (!evidenceEntity.getClaim().getId().equals(claimId)) {
+      throw new ClaimEvidenceNotFoundException(
+          String.format(
+              "Evidence with id: %s does not belong to claim with id: %s",
+              evidenceEntity.getId(), claimId));
+    }
+  }
+
+  private void checkIfLineItemExistsForClaim(LineItemEntity lineItemEntity, ClaimEntity claimEntity)
+      throws ClaimNotFoundException {
+    Long claimId = claimEntity.getId();
+    if (!lineItemEntity.getClaim().getId().equals(claimEntity.getId())) {
+      throw new LineItemNotFoundException(
+          String.format(
+              "Line item with id: %s does not belong to claim with id: %s",
+              lineItemEntity.getId(), claimId));
+    }
+  }
+
+  private void checkIfEvidenceExistsForLineItem(
+      ClaimEvidenceEntity evidenceEntity, LineItemEntity lineItemEntity)
+      throws ClaimNotFoundException {
+    Long evidenceId = evidenceEntity.getId();
+    if (!lineItemEntity.getEvidenceItems().stream()
+        .map(ClaimEvidenceEntity::getId)
+        .toList()
+        .contains(evidenceId)) {
+      throw new ClaimEvidenceNotFoundException(
+          String.format(
+              "Evidence with id: %s does not belong to line item with id: %s",
+              evidenceId, lineItemEntity.getId()));
+    }
   }
 
   @Override
@@ -143,7 +181,7 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
 
   @Override
   public Long addLineItemToClaim(Long claimId, LineItemRequestBody lineItemRequestBody) {
-    ClaimEntity claimEntity = checkIfClaimExist(claimId);
+    ClaimEntity claimEntity = checkIfClaimExists(claimId);
     LineItemEntity newLineItemEntity = new LineItemEntity();
     newLineItemEntity.setTitle(lineItemRequestBody.getTitle());
     newLineItemEntity.setClaim(claimEntity);
@@ -155,7 +193,7 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
 
   @Override
   public Long addEvidenceToClaim(Long claimId, ClaimEvidenceRequestBody claimEvidenceRequestBody) {
-    ClaimEntity claimEntity = checkIfClaimExist(claimId);
+    ClaimEntity claimEntity = checkIfClaimExists(claimId);
     ClaimEvidenceEntity newEvidenceEntity = new ClaimEvidenceEntity();
     newEvidenceEntity.setFileKey(claimEvidenceRequestBody.getFileKey());
     newEvidenceEntity.setFileSize(claimEvidenceRequestBody.getFileSize());
@@ -165,18 +203,38 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
   }
 
   @Override
-  public void linkEvidenceToLineItem(Long claimId, Long lineItemId, List<Long> evidenceIds) {
-    ClaimEntity claimEntity = checkIfClaimExist(claimId);
-    LineItemEntity lineItemEntity = checkIfLineItemExist(lineItemId);
-    List<ClaimEvidenceEntity> evidenceEntities = evidenceIds.stream().map(
-        this::checkIfClaimEvidenceExists).toList();
-
-    if (!lineItemEntity.getClaim().getId().equals(claimEntity.getId())) {
-      throw new LineItemNotFoundException(
-          String.format(
-              "Line item with id: %s does not belong to claim with id: %s", lineItemId, claimId));
+  @Transactional
+  public void deleteEvidenceFromClaim(Long claimId, Long evidenceId) {
+    ClaimEntity claimEntity = checkIfClaimExists(claimId);
+    ClaimEvidenceEntity evidenceEntity = checkIfEvidenceExists(evidenceId);
+    checkIfEvidenceExistsForClaim(evidenceEntity, claimEntity);
+    for (LineItemEntity lineItemEntity : claimEntity.getLineItems()) {
+      lineItemEntity.getEvidenceItems().remove(evidenceEntity);
     }
+    claimEntity.getEvidence().remove(evidenceEntity);
+    claimEvidenceRepository.deleteById(evidenceId);
+  }
+
+  @Override
+  public void linkEvidenceToLineItem(Long claimId, Long lineItemId, List<Long> evidenceIds) {
+    ClaimEntity claimEntity = checkIfClaimExists(claimId);
+    LineItemEntity lineItemEntity = checkIfLineItemExists(lineItemId);
+    checkIfLineItemExistsForClaim(lineItemEntity, claimEntity);
+    List<ClaimEvidenceEntity> evidenceEntities = evidenceIds.stream().map(
+        this::checkIfEvidenceExists).toList();
     lineItemEntity.getEvidenceItems().addAll(evidenceEntities);
+    lineItemRepository.save(lineItemEntity);
+  }
+
+  @Override
+  public void unlinkEvidenceFromLineItem(Long claimId, Long lineItemId, Long evidenceId) {
+    ClaimEntity claimEntity = checkIfClaimExists(claimId);
+    LineItemEntity lineItemEntity = checkIfLineItemExists(lineItemId);
+    ClaimEvidenceEntity evidenceEntity = checkIfEvidenceExists(evidenceId);
+    checkIfLineItemExistsForClaim(lineItemEntity, claimEntity);
+    checkIfEvidenceExistsForLineItem(evidenceEntity, lineItemEntity);
+    checkIfEvidenceExistsForClaim(evidenceEntity, claimEntity);
+    lineItemEntity.getEvidenceItems().remove(evidenceEntity);
     lineItemRepository.save(lineItemEntity);
   }
 }

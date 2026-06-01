@@ -390,6 +390,22 @@ class ClaimControllerTest {
   }
 
   @Test
+  void deleteEvidenceFromClaim_returnsNoContentStatus() throws Exception {
+    UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/3/evidence/1")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNoContent());
+
+    verify(mockClaimService).deleteEvidenceFromClaim(3L, 1L);
+  }
+
+  @Test
   void addExistingEvidenceToLineItem_returnsNoContentStatus() throws Exception {
     UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
     String requestBody = "[3]";
@@ -425,5 +441,21 @@ class ClaimControllerTest {
         .andExpect(status().isNoContent());
 
     verify(mockClaimService).linkEvidenceToLineItem(3L, 2L, List.of(3L, 4L, 5L));
+  }
+
+  @Test
+  void unlinkExistingEvidenceFromLineItem_returnsNoContentStatus() throws Exception {
+    UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/3/line-items/2/evidence/1")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNoContent());
+
+    verify(mockClaimService).unlinkEvidenceFromLineItem(3L, 2L, 1L);
   }
 }

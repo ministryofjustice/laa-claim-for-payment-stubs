@@ -131,7 +131,7 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].id").value(2))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileKey").value("amoto-invoice-002.pdf"))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileSize").value(4000000))
-        .andExpect(jsonPath("$.evidence", hasSize(2)));
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
   }
 
   @Test
@@ -309,7 +309,7 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.id").value(claimId))
         .andExpect(jsonPath("$.lineItems", hasSize(1)))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)))
-        .andExpect(jsonPath("$.evidence", hasSize(2)));
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
 
     mockMvc
         .perform(
@@ -332,7 +332,7 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.id").value(claimId))
         .andExpect(jsonPath("$.lineItems", hasSize(1)))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)))
-        .andExpect(jsonPath("$.evidence", hasSize(1)));
+        .andExpect(jsonPath("$.evidence", hasSize(3)));
   }
 
   @Test
@@ -349,10 +349,25 @@ class ClaimControllerIntegrationTest {
 
   @Test
   void addEvidenceToLineItem_returnsNoContentStatus() throws Exception {
-    String requestBody = "[1]";
+    Long claimId = 2L;
+    String requestBody = "[3]";
     mockMvc
         .perform(
-            post("/api/v1/claims/3/line-items/2/evidence")
+            get("/api/v1/claims/{claimId}", claimId)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(claimId))
+        .andExpect(jsonPath("$.lineItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)))
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
+
+    mockMvc
+        .perform(
+            post("/api/v1/claims/{claimId}/line-items/1/evidence", claimId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody)
                 .with(
@@ -363,24 +378,41 @@ class ClaimControllerIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/v1/claims/{claimId}", 3)
+            get("/api/v1/claims/{claimId}", claimId)
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
                         .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(3))
-        .andExpect(jsonPath("$.lineItems", hasSize(7)))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)));
+        .andExpect(jsonPath("$.id").value(claimId))
+        .andExpect(jsonPath("$.lineItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(3)))
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
   }
 
   @Test
   void addMultipleEvidenceToLineItem_returnsNoContentStatus() throws Exception {
-    String requestBody = "[1,2]";
+    Long claimId = 2L;
+    String requestBody = "[3,4]";
+
     mockMvc
         .perform(
-            post("/api/v1/claims/3/line-items/2/evidence")
+            get("/api/v1/claims/{claimId}", claimId)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(claimId))
+        .andExpect(jsonPath("$.lineItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)))
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
+
+    mockMvc
+        .perform(
+            post("/api/v1/claims/{claimId}/line-items/1/evidence", claimId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody)
                 .with(
@@ -391,16 +423,17 @@ class ClaimControllerIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/v1/claims/{claimId}", 3)
+            get("/api/v1/claims/{claimId}", claimId)
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
                         .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(3))
-        .andExpect(jsonPath("$.lineItems", hasSize(7)))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)));
+        .andExpect(jsonPath("$.id").value(claimId))
+        .andExpect(jsonPath("$.lineItems", hasSize(1)))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(4)))
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
   }
 
   @Test
@@ -419,7 +452,7 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.id").value(claimId))
         .andExpect(jsonPath("$.lineItems", hasSize(1)))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)))
-        .andExpect(jsonPath("$.evidence", hasSize(2)));
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
 
     mockMvc
         .perform(
@@ -442,7 +475,7 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.id").value(claimId))
         .andExpect(jsonPath("$.lineItems", hasSize(1)))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)))
-        .andExpect(jsonPath("$.evidence", hasSize(2)));
+        .andExpect(jsonPath("$.evidence", hasSize(4)));
   }
 
   @Test

@@ -185,6 +185,16 @@ claim_evidence:
     fileIdString: "amoto-invoice-002.pdf"
     fileSize: 4000000
 
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    fileIdString: "amoto-invoice-003.pdf"
+    fileSize: 5000000
+
+  - claimUfn: "100323/098"
+    client: "Amoto"
+    fileIdString: "amoto-invoice-004.pdf"
+    fileSize: 6000000
+
 line_items:
   - claimUfn: "100323/098"
     client: "Amoto"

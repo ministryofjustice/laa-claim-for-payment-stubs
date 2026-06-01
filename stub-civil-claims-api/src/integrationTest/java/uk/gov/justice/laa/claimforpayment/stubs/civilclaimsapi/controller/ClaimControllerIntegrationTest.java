@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -194,6 +193,35 @@ class ClaimControllerIntegrationTest {
   }
 
   @Test
+  void shouldFailToUpdateClaimWhenClaimDoesNotExist() throws Exception {
+    String requestBody =
+        """
+        {
+          "ufn": "UPDATED/123",
+          "client": "Updated Client",
+          "category": "Immigration and Asylum",
+          "concluded": "2025-07-10",
+          "feeType": "Fixed",
+          "escaped": false,
+          "counselPayment": "Paid and Reconciled",
+          "claimed": 999.99
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/v1/claims/{claimId}", 9999)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void shouldDeleteClaim() throws Exception {
     mockMvc
         .perform(
@@ -203,6 +231,18 @@ class ClaimControllerIntegrationTest {
                         .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
                         .authorities(() -> "SCOPE_" + claimsWriteScope)))
         .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void shouldFailToDeleteClaimWhenClaimDoesNotExist() throws Exception {
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/{claimId}", 9999)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNotFound());
   }
 
   @Test

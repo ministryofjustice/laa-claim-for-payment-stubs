@@ -255,18 +255,6 @@ class ClaimControllerIntegrationTest {
 
   @Test
   void deleteEvidenceFromClaim_returnsNoContentStatus() throws Exception {
-    mockMvc
-        .perform(
-            delete("/api/v1/claims/9999/evidence/1")
-                .with(
-                    jwt()
-                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
-                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  void deleteEvidenceFromClaim_returnsNotFoundStatusWhenClaimNotFound() throws Exception {
     int claimId = 2;
 
     mockMvc
@@ -305,6 +293,18 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.lineItems", hasSize(1)))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(1)))
         .andExpect(jsonPath("$.evidence", hasSize(1)));
+  }
+
+  @Test
+  void deleteEvidenceFromClaim_returnsNotFoundStatusWhenClaimNotFound() throws Exception {
+    mockMvc
+        .perform(
+            delete("/api/v1/claims/9999/evidence/1")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.claim("USER_NAME", providerUserId1.toString()))
+                        .authorities(() -> "SCOPE_" + claimsWriteScope)))
+        .andExpect(status().isNotFound());
   }
 
   @Test

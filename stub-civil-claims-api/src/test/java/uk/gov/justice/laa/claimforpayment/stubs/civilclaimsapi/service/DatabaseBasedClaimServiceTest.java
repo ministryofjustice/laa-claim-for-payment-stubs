@@ -774,7 +774,7 @@ class DatabaseBasedClaimServiceTest {
   }
 
   @Test
-  void shouldFailToUnlinkEvidenceFromLineItemWhenEvidenceIsNotAlreadyLinkedToLineItem() {
+  void shouldFailToUnlinkEvidenceFromLineItemWhenEvidenceDoesNotBelongToLineItem() {
 
     ClaimEntity claimEntity =
         ClaimEntity.builder()
@@ -795,6 +795,51 @@ class DatabaseBasedClaimServiceTest {
     LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity).build();
 
     when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity));
+    when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
+
+    assertThrows(
+        ClaimEvidenceNotFoundException.class, () -> claimService.unlinkEvidenceFromLineItem(1L, 1L, 1L));
+  }
+
+  @Test
+  void shouldFailToUnlinkEvidenceFromLineItemWhenEvidenceDoesNotBelongToClaim() {
+
+    ClaimEntity claimEntity1 =
+        ClaimEntity.builder()
+            .id(1L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEntity claimEntity2 =
+        ClaimEntity.builder()
+            .id(2L)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder().id(1L).claim(claimEntity2).build();
+
+    Set<ClaimEvidenceEntity> claimEvidenceEntities = new HashSet<>();
+    claimEvidenceEntities.add(claimEvidenceEntity);
+
+    LineItemEntity lineItemEntity = LineItemEntity.builder().id(1L).claim(claimEntity1).evidenceItems(claimEvidenceEntities).build();
+
+    when(mockClaimRepository.findById(1L)).thenReturn(Optional.of(claimEntity1));
     when(mockLineItemRepository.findById(1L)).thenReturn(Optional.of(lineItemEntity));
     when(mockClaimEvidenceRepository.findById(1L)).thenReturn(Optional.of(claimEvidenceEntity));
 

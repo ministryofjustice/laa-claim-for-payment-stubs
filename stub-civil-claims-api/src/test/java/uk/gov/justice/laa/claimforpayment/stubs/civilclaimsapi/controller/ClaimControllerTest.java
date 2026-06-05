@@ -139,12 +139,15 @@ class ClaimControllerTest {
   void getClaimById_returnsOkStatusAndOneClaim() throws Exception {
     UUID providerUserId1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
-    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(1L).fileKey("fileKey1").build();
-    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(2L).fileKey("fileKey2").build();
-    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(3L).fileKey("fileKey3").build();
+    Long claimEvidence1Id = 1L;
+    Long claimEvidence2Id = 2L;
+    Long claimEvidence3Id = 3L;
+    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(claimEvidence1Id).fileKey("fileKey1").build();
+    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(claimEvidence2Id).fileKey("fileKey2").build();
+    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(claimEvidence3Id).fileKey("fileKey3").build();
     LineItem lineItem1 =
-        LineItem.builder().id(1L).evidenceItems(List.of(claimEvidence1, claimEvidence2)).build();
-    LineItem lineItem2 = LineItem.builder().id(2L).evidenceItems(List.of(claimEvidence3)).build();
+        LineItem.builder().id(1L).evidenceItems(List.of(claimEvidence1Id, claimEvidence2Id)).build();
+    LineItem lineItem2 = LineItem.builder().id(2L).evidenceItems(List.of(claimEvidence3Id)).build();
 
     when(mockClaimService.getClaim(1L))
         .thenReturn(
@@ -178,16 +181,19 @@ class ClaimControllerTest {
         .andExpect(jsonPath("$.client").value("Smith"))
         .andExpect(jsonPath("$.lineItems", hasSize(2)))
         .andExpect(jsonPath("$.evidence", hasSize(3)))
+        .andExpect(jsonPath("$.evidence[0].id").value(1))
+        .andExpect(jsonPath("$.evidence[0].fileKey").value("fileKey1"))
+        .andExpect(jsonPath("$.evidence[1].id").value(2))
+        .andExpect(jsonPath("$.evidence[1].fileKey").value("fileKey2"))
+        .andExpect(jsonPath("$.evidence[2].id").value(3))
+        .andExpect(jsonPath("$.evidence[2].fileKey").value("fileKey3"))
         .andExpect(jsonPath("$.lineItems[0].id").value(1))
         .andExpect(jsonPath("$.lineItems[0].evidenceItems", hasSize(2)))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].id").value(1))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0].fileKey").value("fileKey1"))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].id").value(2))
-        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1].fileKey").value("fileKey2"))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[0]").value(1))
+        .andExpect(jsonPath("$.lineItems[0].evidenceItems[1]").value(2))
         .andExpect(jsonPath("$.lineItems[1].id").value(2))
         .andExpect(jsonPath("$.lineItems[1].evidenceItems", hasSize(1)))
-        .andExpect(jsonPath("$.lineItems[1].evidenceItems[0].id").value(3))
-        .andExpect(jsonPath("$.lineItems[1].evidenceItems[0].fileKey").value("fileKey3"));
+        .andExpect(jsonPath("$.lineItems[1].evidenceItems[0]").value(3));
   }
 
   @Test

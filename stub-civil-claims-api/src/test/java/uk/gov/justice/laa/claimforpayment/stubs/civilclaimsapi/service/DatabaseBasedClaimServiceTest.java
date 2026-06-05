@@ -192,14 +192,17 @@ class DatabaseBasedClaimServiceTest {
   @Test
   void shouldGetClaimById() {
 
-    Long id = 1L;
+    Long claimId = 1L;
 
-    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(1L).fileKey("fileKey1").fileSize(1000L).build();
-    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(2L).fileKey("fileKey2").fileSize(2000L).build();
-    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(3L).fileKey("fileKey3").fileSize(3000L).build();
+    Long claimEvidence1Id = 1L;
+    Long claimEvidence2Id = 2L;
+    Long claimEvidence3Id = 3L;
+    ClaimEvidence claimEvidence1 = ClaimEvidence.builder().id(claimEvidence1Id).fileKey("fileKey1").fileSize(1000L).build();
+    ClaimEvidence claimEvidence2 = ClaimEvidence.builder().id(claimEvidence2Id).fileKey("fileKey2").fileSize(2000L).build();
+    ClaimEvidence claimEvidence3 = ClaimEvidence.builder().id(claimEvidence3Id).fileKey("fileKey3").fileSize(3000L).build();
     LineItem lineItem1 =
-        LineItem.builder().id(1L).evidenceItems(List.of(claimEvidence1, claimEvidence2)).build();
-    LineItem lineItem2 = LineItem.builder().id(2L).evidenceItems(List.of(claimEvidence3)).build();
+        LineItem.builder().id(1L).evidenceItems(List.of(claimEvidence1Id, claimEvidence2Id)).build();
+    LineItem lineItem2 = LineItem.builder().id(2L).evidenceItems(List.of(claimEvidence3Id)).build();
 
     ClaimEvidenceEntity claimEvidenceEntity1 =
         ClaimEvidenceEntity.builder().id(1L).fileKey("fileKey1").build();
@@ -217,7 +220,7 @@ class DatabaseBasedClaimServiceTest {
 
     ClaimEntity claimEntity =
         ClaimEntity.builder()
-            .id(id)
+            .id(claimId)
             .ufn("UFN123")
             .client("John Doe")
             .category("Category A")
@@ -232,7 +235,7 @@ class DatabaseBasedClaimServiceTest {
 
     Claim claim =
         Claim.builder()
-            .id(id)
+            .id(claimId)
             .ufn("UFN123")
             .client("John Doe")
             .category("Category A")
@@ -245,13 +248,13 @@ class DatabaseBasedClaimServiceTest {
             .evidence(List.of(claimEvidence1, claimEvidence2, claimEvidence3))
             .build();
 
-    when(mockClaimRepository.findById(id)).thenReturn(Optional.of(claimEntity));
+    when(mockClaimRepository.findById(claimId)).thenReturn(Optional.of(claimEntity));
     when(mockClaimMapper.toClaim(claimEntity)).thenReturn(claim);
 
-    Claim result = claimService.getClaim(id);
+    Claim result = claimService.getClaim(claimId);
 
     assertThat(result).isNotNull();
-    assertThat(result.getId()).isEqualTo(id);
+    assertThat(result.getId()).isEqualTo(claimId);
     assertThat(result.getClient()).isEqualTo("John Doe");
     assertThat(result.getClaimed()).isEqualTo(new BigDecimal(1000.0));
     assertThat(result.getLineItems()).hasSize(2).contains(lineItem1, lineItem2);

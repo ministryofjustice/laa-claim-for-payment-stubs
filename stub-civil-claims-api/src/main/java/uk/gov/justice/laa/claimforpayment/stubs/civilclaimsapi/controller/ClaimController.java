@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.AddClaimEvidenceResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.AddLineItemResponse;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;

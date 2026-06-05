@@ -3,33 +3,28 @@ package uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.mapstruct.factory.Mappers;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEvidenceEntity;
-import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidence;
 
 class ClaimEvidenceMapperTest {
 
-  @InjectMocks private ClaimEvidenceMapper claimEvidenceMapper = new ClaimEvidenceMapperImpl();
-
-  @Test
-  void shouldMapToClaimEvidenceEntity() {
-    ClaimEvidence claimEvidence = ClaimEvidence.builder().fileKey("fileKey").fileSize(1000L).build();
-
-    var claimEvidenceEntity = claimEvidenceMapper.toClaimEvidenceEntity(claimEvidence);
-
-    assertThat(claimEvidenceEntity).isNotNull();
-    assertThat(claimEvidenceEntity.getFileKey()).isEqualTo(claimEvidence.getFileKey());
-    assertThat(claimEvidenceEntity.getFileSize()).isEqualTo(claimEvidence.getFileSize());
-  }
+  private final ClaimEvidenceMapper claimEvidenceMapper =
+      Mappers.getMapper(ClaimEvidenceMapper.class);
 
   @Test
   void shouldMapToClaimEvidence() {
-    var claimEvidenceEntity = ClaimEvidenceEntity.builder().fileKey("fileKey").fileSize(1000L).build();
+    var claimEvidenceEntity =
+        ClaimEvidenceEntity.builder()
+            .id(1L)
+            .fileKey("fileKey")
+            .fileSize(1000L)
+            .build();
 
-    var claimEvidence = claimEvidenceMapper.toClaimEvidence(claimEvidenceEntity);
+    var result = claimEvidenceMapper.toClaimEvidence(claimEvidenceEntity);
 
-    assertThat(claimEvidence).isNotNull();
-    assertThat(claimEvidence.getFileKey()).isEqualTo(claimEvidenceEntity.getFileKey());
-    assertThat(claimEvidence.getFileSize()).isEqualTo(claimEvidenceEntity.getFileSize());
+    assertThat(result).isNotNull();
+    assertThat(result.getId()).isEqualTo(claimEvidenceEntity.getId());
+    assertThat(result.getFileKey()).isEqualTo(claimEvidenceEntity.getFileKey());
+    assertThat(result.getFileSize()).isEqualTo(claimEvidenceEntity.getFileSize());
   }
 }

@@ -134,7 +134,7 @@ public class ClaimsSeeder {
 
     Map<String, Long> evidenceIds = new HashMap<>();
     String sql = "INSERT INTO claim_evidence"
-        + " (claim_id, file_key, file_size, date_added) "
+        + " (claim_id, file_key, file_size, submitted_on) "
         + "VALUES (?, ?, ?, ?)";
 
     try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -144,7 +144,7 @@ public class ClaimsSeeder {
         ps.setLong(1, claimIds.get(key));
         ps.setString(2, e.fileIdString);
         ps.setLong(3, e.fileSize);
-        ps.setTimestamp(4, Timestamp.from(e.dateAdded));
+        ps.setTimestamp(4, Timestamp.from(e.submittedOn));
         ps.executeUpdate();
 
         try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -268,7 +268,7 @@ public class ClaimsSeeder {
     public String client;
     public String fileIdString;
     public Long fileSize;
-    public Instant dateAdded;
+    public Instant submittedOn;
   }
 
   /** DTO for a line item row. */

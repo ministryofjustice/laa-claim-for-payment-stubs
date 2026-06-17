@@ -44,7 +44,7 @@ public class ClaimEvidenceEntity {
   private Long fileSize;
 
   @CreationTimestamp
-  private Instant dateAdded;
+  private Instant submittedOn;
 
   @ManyToMany(mappedBy = "evidenceItems")
   @Builder.Default

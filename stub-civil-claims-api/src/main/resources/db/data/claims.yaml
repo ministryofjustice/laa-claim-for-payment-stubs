@@ -179,25 +179,25 @@ claim_evidence:
     client: "Amoto"
     fileIdString: "amoto-invoice-001.pdf"
     fileSize: 5000000
-    dateAdded: "2026-06-17T10:15:30Z"
+    submittedOn: "2026-06-17T10:15:30Z"
 
   - claimUfn: "100323/098"
     client: "Amoto"
     fileIdString: "amoto-invoice-002.pdf"
     fileSize: 4000000
-    dateAdded: "2026-06-17T10:16:45Z"
+    submittedOn: "2026-06-17T10:16:45Z"
 
   - claimUfn: "100323/098"
     client: "Amoto"
     fileIdString: "amoto-invoice-003.pdf"
     fileSize: 5000000
-    dateAdded: "2026-06-17T10:18:12Z"
+    submittedOn: "2026-06-17T10:18:12Z"
 
   - claimUfn: "100323/098"
     client: "Amoto"
     fileIdString: "amoto-invoice-004.pdf"
     fileSize: 6000000
-    dateAdded: "2026-06-17T10:20:05Z"
+    submittedOn: "2026-06-17T10:20:05Z"
 
 line_items:
   - claimUfn: "100323/098"

@@ -132,19 +132,19 @@ class ClaimControllerIntegrationTest {
         .andExpect(jsonPath("$.evidence[0].id").value(1))
         .andExpect(jsonPath("$.evidence[0].fileKey").value("amoto-invoice-001.pdf"))
         .andExpect(jsonPath("$.evidence[0].fileSize").value(5000000))
-        .andExpect(jsonPath("$.evidence[0].dateAdded").value("2026-06-17T10:15:30Z"))
+        .andExpect(jsonPath("$.evidence[0].submittedOn").value("2026-06-17T10:15:30Z"))
         .andExpect(jsonPath("$.evidence[1].id").value(2))
         .andExpect(jsonPath("$.evidence[1].fileKey").value("amoto-invoice-002.pdf"))
         .andExpect(jsonPath("$.evidence[1].fileSize").value(4000000))
-        .andExpect(jsonPath("$.evidence[1].dateAdded").value("2026-06-17T10:16:45Z"))
+        .andExpect(jsonPath("$.evidence[1].submittedOn").value("2026-06-17T10:16:45Z"))
         .andExpect(jsonPath("$.evidence[2].id").value(3))
         .andExpect(jsonPath("$.evidence[2].fileKey").value("amoto-invoice-003.pdf"))
         .andExpect(jsonPath("$.evidence[2].fileSize").value(5000000))
-        .andExpect(jsonPath("$.evidence[2].dateAdded").value("2026-06-17T10:18:12Z"))
+        .andExpect(jsonPath("$.evidence[2].submittedOn").value("2026-06-17T10:18:12Z"))
         .andExpect(jsonPath("$.evidence[3].id").value(4))
         .andExpect(jsonPath("$.evidence[3].fileKey").value("amoto-invoice-004.pdf"))
         .andExpect(jsonPath("$.evidence[3].fileSize").value(6000000))
-        .andExpect(jsonPath("$.evidence[3].dateAdded").value("2026-06-17T10:20:05Z"));
+        .andExpect(jsonPath("$.evidence[3].submittedOn").value("2026-06-17T10:20:05Z"));
   }
 
   @Test

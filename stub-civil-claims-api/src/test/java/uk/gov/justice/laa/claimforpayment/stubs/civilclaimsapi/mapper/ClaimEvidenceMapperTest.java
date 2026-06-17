@@ -26,6 +26,6 @@ class ClaimEvidenceMapperTest {
     assertThat(result.getId()).isEqualTo(claimEvidenceEntity.getId());
     assertThat(result.getFileKey()).isEqualTo(claimEvidenceEntity.getFileKey());
     assertThat(result.getFileSize()).isEqualTo(claimEvidenceEntity.getFileSize());
-    assertThat(result.getDateAdded()).isEqualTo(claimEvidenceEntity.getDateAdded());
+    assertThat(result.getSubmittedOn()).isEqualTo(claimEvidenceEntity.getSubmittedOn());
   }
 }

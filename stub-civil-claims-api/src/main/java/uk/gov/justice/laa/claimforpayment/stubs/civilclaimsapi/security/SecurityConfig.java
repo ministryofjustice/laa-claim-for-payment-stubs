@@ -34,7 +34,9 @@ public class SecurityConfig {
   SecurityFilterChain h2ConsoleSecurityFilterChain(HttpSecurity http) throws Exception {
     var h2 = PathPatternRequestMatcher.withDefaults().matcher("/h2-console/**");
 
-    http.securityMatcher(h2)
+    http.sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .securityMatcher(h2)
         .authorizeHttpRequests(a -> a.anyRequest().permitAll())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -54,7 +56,9 @@ public class SecurityConfig {
       Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter)
       throws Exception {
     log.info("USING REAL SECURITY CONFIG");
-    http.authorizeHttpRequests(
+    http.sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
                         "/",

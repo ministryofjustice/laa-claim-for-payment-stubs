@@ -48,7 +48,7 @@ dependencies {
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
         exclude group: 'tools.jackson.core', module: 'jackson-databind'
     }
-    implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3') {
+    implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0') {
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
         exclude group: 'tools.jackson.core', module: 'jackson-databind'
@@ -60,13 +60,13 @@ dependencies {
     implementation "tools.jackson.core:jackson-databind:${rootProject.ext.jacksonDatabindVersion}"
     implementation 'org.apache.commons:commons-lang3:3.20.0'
     implementation 'org.wiremock:wiremock-standalone:3.13.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.23'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.24'
 
-    runtimeOnly "ch.qos.logback:logback-classic:1.5.36"
-    runtimeOnly "ch.qos.logback:logback-core:1.5.36"
+    runtimeOnly "ch.qos.logback:logback-classic:1.6.1"
+    runtimeOnly "ch.qos.logback:logback-core:1.6.1"
 
     // Overrides to resolve vulnerabilities identified by Snyk
-    implementation 'ch.qos.logback:logback-core:1.5.36'
+    implementation 'ch.qos.logback:logback-core:1.6.1'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'

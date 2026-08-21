@@ -62,11 +62,11 @@ dependencies {
     implementation 'org.wiremock:wiremock-standalone:3.13.2'
     implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.24'
 
-    runtimeOnly "ch.qos.logback:logback-classic:1.6.1"
-    runtimeOnly "ch.qos.logback:logback-core:1.6.1"
+    runtimeOnly "ch.qos.logback:logback-classic:1.6.3"
+    runtimeOnly "ch.qos.logback:logback-core:1.6.3"
 
     // Overrides to resolve vulnerabilities identified by Snyk
-    implementation 'ch.qos.logback:logback-core:1.6.1'
+    implementation 'ch.qos.logback:logback-core:1.6.3'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'

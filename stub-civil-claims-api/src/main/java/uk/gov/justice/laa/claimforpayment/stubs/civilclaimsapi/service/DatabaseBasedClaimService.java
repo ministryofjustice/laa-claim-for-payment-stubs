@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.ClaimEntity;
@@ -14,6 +15,7 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.LineItemEn
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimEvidenceNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.LineItemNotFoundException;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.StubException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.mapper.ClaimMapper;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidenceRequestBody;
@@ -32,6 +34,9 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
   private final LineItemRepository lineItemRepository;
   private final ClaimMapper claimMapper;
   private final ClaimEvidenceRepository claimEvidenceRepository;
+
+  private static final String ADD_EVIDENCE_FAILURE_FILE_KEY = "upload_failure.pdf";
+  private static final String DELETE_EVIDENCE_FAILURE_FILE_KEY = "deletion_failure.pdf";
 
   /**
    * Gets all claims.
@@ -193,6 +198,10 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
 
   @Override
   public UUID addEvidenceToClaim(UUID claimId, ClaimEvidenceRequestBody claimEvidenceRequestBody) {
+    if (ADD_EVIDENCE_FAILURE_FILE_KEY.equals(claimEvidenceRequestBody.getFileKey())) {
+      throw new StubException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "Simulating an add evidence failure");
+    }
     ClaimEntity claimEntity = checkIfClaimExists(claimId);
     ClaimEvidenceEntity newEvidenceEntity = new ClaimEvidenceEntity();
     newEvidenceEntity.setId(claimEvidenceRequestBody.getId());
@@ -210,6 +219,10 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     ClaimEntity claimEntity = checkIfClaimExists(claimId);
     ClaimEvidenceEntity evidenceEntity = checkIfEvidenceExists(evidenceId);
     checkIfEvidenceExistsForClaim(evidenceEntity, claimEntity);
+    if (DELETE_EVIDENCE_FAILURE_FILE_KEY.equals(evidenceEntity.getFileKey())) {
+      throw new StubException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "Simulating a delete evidence failure");
+    }
     for (LineItemEntity lineItemEntity : claimEntity.getLineItems()) {
       lineItemEntity.getEvidenceItems().remove(evidenceEntity);
     }
@@ -238,6 +251,10 @@ public class DatabaseBasedClaimService implements ClaimServiceInterface {
     checkIfLineItemExistsForClaim(lineItemEntity, claimEntity);
     checkIfEvidenceExistsForLineItem(evidenceEntity, lineItemEntity);
     checkIfEvidenceExistsForClaim(evidenceEntity, claimEntity);
+    if (DELETE_EVIDENCE_FAILURE_FILE_KEY.equals(evidenceEntity.getFileKey())) {
+      throw new StubException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "Simulating an unlink evidence failure");
+    }
     lineItemEntity.getEvidenceItems().remove(evidenceEntity);
     lineItemRepository.save(lineItemEntity);
   }

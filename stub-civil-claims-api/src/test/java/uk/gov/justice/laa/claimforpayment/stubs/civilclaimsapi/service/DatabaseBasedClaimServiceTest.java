@@ -30,6 +30,7 @@ import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.entity.LineItemEn
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimEvidenceNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.ClaimNotFoundException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.LineItemNotFoundException;
+import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.exception.StubException;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.mapper.ClaimMapper;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.Claim;
 import uk.gov.justice.laa.claimforpayment.stubs.civilclaimsapi.model.ClaimEvidence;
@@ -448,6 +449,19 @@ class DatabaseBasedClaimServiceTest {
   }
 
   @Test
+  void shouldFailToAddEvidenceToClaimForSpecificFileName() {
+
+    UUID claimId = UUID.randomUUID();
+
+    ClaimEvidenceRequestBody claimEvidenceRequestBody =
+        ClaimEvidenceRequestBody.builder().fileKey("upload_failure.pdf").build();
+
+    assertThrows(
+        StubException.class,
+        () -> claimService.addEvidenceToClaim(claimId, claimEvidenceRequestBody));
+  }
+
+  @Test
   void shouldAddLineItemToClaim() {
 
     UUID claimId = UUID.randomUUID();
@@ -625,6 +639,52 @@ class DatabaseBasedClaimServiceTest {
     assertThrows(
         ClaimEvidenceNotFoundException.class,
         () -> claimService.deleteEvidenceFromClaim(claimId1, evidenceId));
+  }
+
+  @Test
+  void shouldFailToDeleteEvidenceFromClaimForSpecificFileName() {
+
+    UUID claimId = UUID.randomUUID();
+    UUID lineItemId = UUID.randomUUID();
+    UUID evidenceId = UUID.randomUUID();
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(claimId)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    LineItemEntity lineItemEntity =
+        LineItemEntity.builder().id(lineItemId).claim(claimEntity).build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder()
+            .id(evidenceId)
+            .fileKey("deletion_failure.pdf")
+            .claim(claimEntity)
+            .build();
+
+    Set<ClaimEvidenceEntity> claimEvidenceEntities = new HashSet<>();
+    claimEvidenceEntities.add(claimEvidenceEntity);
+    lineItemEntity.setEvidenceItems(claimEvidenceEntities);
+
+    List<LineItemEntity> lineItemEntities = new ArrayList<>();
+    lineItemEntities.add(lineItemEntity);
+    claimEntity.setLineItems(lineItemEntities);
+
+    when(mockClaimRepository.findById(claimId)).thenReturn(Optional.of(claimEntity));
+    when(mockClaimEvidenceRepository.findById(evidenceId))
+        .thenReturn(Optional.of(claimEvidenceEntity));
+
+    assertThrows(
+        StubException.class, () -> claimService.deleteEvidenceFromClaim(claimId, evidenceId));
   }
 
   @Test
@@ -1019,6 +1079,53 @@ class DatabaseBasedClaimServiceTest {
 
     assertThrows(
         ClaimEvidenceNotFoundException.class,
+        () -> claimService.unlinkEvidenceFromLineItem(claimId1, lineItemId, evidenceId));
+  }
+
+  @Test
+  void shouldFailToUnlinkEvidenceFromLineItemForSpecificFileName() {
+
+    UUID claimId1 = UUID.randomUUID();
+    UUID lineItemId = UUID.randomUUID();
+    UUID evidenceId = UUID.randomUUID();
+
+    ClaimEntity claimEntity =
+        ClaimEntity.builder()
+            .id(claimId1)
+            .ufn("UFN123")
+            .client("John Doe")
+            .category("Category A")
+            .concluded(LocalDate.of(2025, 7, 1))
+            .feeType("Fixed")
+            .escaped(false)
+            .counselPayment("Paid and Reconciled")
+            .claimed(new BigDecimal(1000.0))
+            .build();
+
+    ClaimEvidenceEntity claimEvidenceEntity =
+        ClaimEvidenceEntity.builder()
+            .id(evidenceId)
+            .fileKey("deletion_failure.pdf")
+            .claim(claimEntity)
+            .build();
+
+    Set<ClaimEvidenceEntity> claimEvidenceEntities = new HashSet<>();
+    claimEvidenceEntities.add(claimEvidenceEntity);
+
+    LineItemEntity lineItemEntity =
+        LineItemEntity.builder()
+            .id(lineItemId)
+            .claim(claimEntity)
+            .evidenceItems(claimEvidenceEntities)
+            .build();
+
+    when(mockClaimRepository.findById(claimId1)).thenReturn(Optional.of(claimEntity));
+    when(mockLineItemRepository.findById(lineItemId)).thenReturn(Optional.of(lineItemEntity));
+    when(mockClaimEvidenceRepository.findById(evidenceId))
+        .thenReturn(Optional.of(claimEvidenceEntity));
+
+    assertThrows(
+        StubException.class,
         () -> claimService.unlinkEvidenceFromLineItem(claimId1, lineItemId, evidenceId));
   }
 }

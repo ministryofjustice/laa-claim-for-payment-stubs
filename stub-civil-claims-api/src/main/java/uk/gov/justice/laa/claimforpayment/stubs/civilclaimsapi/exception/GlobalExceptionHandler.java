@@ -18,6 +18,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
   /**
+   * The handler for StubException.
+   *
+   * @param exception the exception
+   * @return the response status with error message
+   */
+  @ExceptionHandler(StubException.class)
+  public ResponseEntity<String> handleStubException(StubException exception) {
+    return ResponseEntity.status(exception.getStatus()).body(exception.getMessage());
+  }
+
+  /**
    * The handler for ClaimNotFoundException.
    *
    * @param exception the exception
